@@ -30,6 +30,7 @@ ORIG_BYTES = {  # адрес: оригинальные байты (для про
     0x6965a4: "c5fa5985a0feffff", 0xe223c7: "90909090", 0xe252ac: "b48c7300",
     0x1572444: "cdcccc3a610b363b", 0x1586f80: "0000803f", 0x1586bb8: "0000a044",
     0x1586bc4: "0000a044", 0xa250dc: "5881ad00", 0xead8c1: "c5d258eec5d2592d6fe36b00", 0x109fc61: "90" * 29, 0xeb091b: "398ee33f", 0xeb0594: "398ee33f",
+    0x14c9890: "2307863f", 0x14c9928: "2307863f",
 }
 ORIG_BUDGET = {  # адрес записи: (имя, размер в байтах)
     0x18a58c8: ("PRX_DIRECT_MEM", 20971520),
@@ -95,6 +96,7 @@ TR = {
   "c_cross": "9. Crosshair (disp32 -> constant of block 8)",
   "c_dev": "7. Dev Menu UI",
   "c_icon": "11. Interact/pickup icons: world->canvas X * R (code cave)",
+  "c_treasure": "12. Collectibles preview (pickup notification / inventory artifacts): scene camera fov keeps the 16:9 vertical view",
   "md_name": "Ultrawide %dx%d",
   "md_note_dmem": ". Requires shadPS4 with dmem of at least %d MB",
   "err_nopatch": "The base XML has no </Patch>",
@@ -170,6 +172,26 @@ TR = {
   'cache_err_type': 'The specified file is not a ZIP archive: %s',
   'cache_err_write': 'Could not write to the shader cache: %s\nClose the game and shadPS4, then try again.',
   'cache_err_verify': 'Verification after writing failed — the original archive was left unchanged.',
+  # v5 new strings
+  'opt_tag': '(optional)',
+  'help_title': 'Help',
+  'g_spv_group': 'Video cutscene shader patch',
+  'spv_use_lbl': 'Patch the video shader too (fixes stretched cutscenes for ultrawide)',
+  'spv_why': 'Without this patch, cutscenes (in-engine videos) will appear stretched. Not needed for 16:9.',
+  'spv_auto_lbl': 'Recommended — patch via shader cache (automatic)',
+  'spv_fname_lbl': 'File to find:',
+  'spv_cache_prereq': 'Requires: enable «Enable Shader Cache» in shadPS4 settings. Then launch the game, play any cutscene at least once (Options → Credits works), close the game. The shader cache will be at: <shadPS4 folder>\\user\\shader\\cache',
+  'spv_cache_hint': 'Specify the folder above (<shadPS4>\\user\\shader\\cache) or its ZIP export. The patcher will find and patch the video shader automatically — no need to know the file name. Close the game and shadPS4 before patching.\n⚠ Note: after updating shadPS4 you may need to re-patch the shader — the cache file name can change with a new emulator version.',
+  'spv_manual_prereq': 'Requires: enable «Enable Shader Dumping» in shadPS4 settings. Launch the game, play any cutscene (Options → Credits works), close the game. The shader will appear at: <shadPS4 folder>\\user\\shader\\dumps',
+  'spv_manual_lbl': 'Alternative — use shader dumps (manual .spv file)',
+  'g_spv_file': 'Shader file:',
+  'spv_manual_hint': 'The file name is shown above — find it in the dumps folder. After patching, the result goes to user\\shader\\patch\\.',
+  'g_extra_sect': 'Advanced / optional files ▸',
+  'extra_sect_hint': 'These fields are optional. eboot.bin is only used to verify the game version. Base XML is only needed if you already have a custom cheats file.',
+  'mode_desc_off': '✅ GPU gets more memory — CPU memory stays untouched. Recommended. Supported by all recent shadPS4 builds out of the box.',
+  'mem_help_tip': 'Extended (recommended): GPU gets more memory — CPU memory stays unchanged. Supported out of the box by all recent shadPS4 builds. Safest for game stability.\n\nStandard: GPU gets more memory — taken from CPU memory (sound buffers, loading heap, screenshots are reduced). Works with stock shadPS4, but may rarely cause instability.\n\nFor most users: use Extended if your shadPS4 supports it.',
+  'status_will_create': 'Will create',
+  'go_tooltip': 'Creates:\n• XML patch for eboot.bin (resolution, aspect ratio, HUD, camera, memory)\n• Video shader patch (if enabled above)\nResults are saved in a «ShadPS4» folder next to this program.',
  },
  "ru": {
   "no_change": "Площадь не больше 1920x1080 - бюджеты памяти менять не нужно.",
@@ -205,6 +227,7 @@ TR = {
   "c_cross": "9. Прицел (disp32 -> константа блока 8)",
   "c_dev": "7. Dev Menu UI",
   "c_icon": "11. Иконки взаимодействия/подбора: проекция мир->канвас X * R (code cave)",
+  "c_treasure": "12. Превью коллекционных предметов (уведомление о подборе / артефакты в инвентаре): fov камеры сцены сохраняет вертикальный обзор 16:9",
   "md_name": "Ультраширокий %dx%d",
   "md_note_dmem": ". Нужен shadPS4 с dmem не меньше %d МБ",
   "err_nopatch": "В базовом XML нет </Patch>",
@@ -280,6 +303,26 @@ TR = {
   'cache_err_type': 'Указанный файл не является ZIP-архивом: %s',
   'cache_err_write': 'Не удалось записать в кэш шейдеров: %s\nЗакройте игру и shadPS4 и повторите попытку.',
   'cache_err_verify': 'Проверка после записи не пройдена — исходный архив оставлен без изменений.',
+  # v5 new strings
+  'opt_tag': '(необязательно)',
+  'help_title': 'Справка',
+  'g_spv_group': 'Патч шейдера видеороликов',
+  'spv_use_lbl': 'Также пропатчить шейдер видео (исправляет растяжение катсцен для ультраширокого)',
+  'spv_why': 'Без этого патча катсцены (внутриигровые видео) будут растянуты. Для 16:9 не нужен.',
+  'spv_auto_lbl': 'Рекомендуется — патч через кэш шейдеров (автоматически)',
+  'spv_fname_lbl': 'Файл для поиска:',
+  'spv_cache_prereq': 'Необходимо: включите «Enable Shader Cache» в настройках shadPS4. Затем запустите игру, воспроизведите любую катсцену хотя бы раз (Options → Credits подойдёт), закройте игру. Кэш шейдеров находится по пути: <папка shadPS4>\\user\\shader\\cache',
+  'spv_cache_hint': 'Укажите папку выше (<shadPS4>\\user\\shader\\cache) или её ZIP-архив. Патчер автоматически найдёт и пропатчит шейдер видео — знать имя файла не нужно. Закройте игру и shadPS4 перед патчингом.\n⚠ Важно: после обновления shadPS4 возможно придётся пропатчить шейдер заново — имя файла в кэше может поменяться с новой версией эмулятора.',
+  'spv_manual_prereq': 'Необходимо: включите «Enable Shader Dumping» в настройках shadPS4. Запустите игру, воспроизведите любую катсцену (Options → Credits подойдёт), закройте игру. Шейдер появится по пути: <папка shadPS4>\\user\\shader\\dumps',
+  'spv_manual_lbl': 'Альтернатива — дампы шейдеров (вручную, .spv файл)',
+  'g_spv_file': 'Файл шейдера:',
+  'spv_manual_hint': 'Имя файла указано выше — найдите его в папке dumps. После патчинга результат кладётся в user\\shader\\patch\\.',
+  'g_extra_sect': 'Дополнительно / необязательные файлы ▸',
+  'extra_sect_hint': 'Эти поля необязательны. eboot.bin нужен только для проверки версии игры. Базовый XML — только если у вас уже есть свой файл патчей.',
+  'mode_desc_off': '✅ GPU получает больше памяти — CPU-память не трогается. Рекомендуется. Поддерживается всеми актуальными сборками shadPS4 из коробки.',
+  'mem_help_tip': 'Расширенный (рекомендуется): GPU получает больше памяти — CPU-память не меняется. Поддерживается всеми актуальными сборками shadPS4 из коробки. Наиболее безопасен для стабильности.\n\nСтандартный: GPU получает больше памяти — за счёт CPU-памяти (звуковые буферы, куча загрузки, скриншоты уменьшаются). Работает со стоковым shadPS4, но в редких случаях возможны нестабильность или крашы.\n\nДля большинства: используйте Расширенный, это поддерживается всеми актуальными сборками shadPS4.',
+  'status_will_create': 'Будет создано',
+  'go_tooltip': 'Создаёт:\n• XML-патч для eboot.bin (разрешение, аспект, HUD, камера, память)\n• Патч шейдера видео (если включено выше)\nРезультаты сохраняются в папку «ShadPS4» рядом с программой.',
  },
  "uk": {
   "no_change": "Площа не більша за 1920x1080 - бюджети пам'яті змінювати не потрібно.",
@@ -315,6 +358,7 @@ TR = {
   "c_cross": "9. Приціл (disp32 -> константа блока 8)",
   "c_dev": "7. Dev Menu UI",
   "c_icon": "11. Іконки взаємодії/підбору: проєкція світ->канвас X * R (code cave)",
+  "c_treasure": "12. Превʼю колекційних предметів (сповіщення про підбір / артефакти в інвентарі): fov камери сцени зберігає вертикальний огляд 16:9",
   "md_name": "Ультраширокий %dx%d",
   "md_note_dmem": ". Потрібен shadPS4 з dmem не менше %d МБ",
   "err_nopatch": "У базовому XML немає </Patch>",
@@ -390,6 +434,26 @@ TR = {
   'cache_err_type': 'Указаний файл не є ZIP-архівом: %s',
   'cache_err_write': 'Не вдалося записати в кеш шейдерів: %s\nЗакрийте гру та shadPS4 і повторіть спробу.',
   'cache_err_verify': 'Перевірка після запису не пройдена — вихідний архів залишено без змін.',
+  # v5 new strings
+  'opt_tag': '(необов\'язково)',
+  'help_title': 'Довідка',
+  'g_spv_group': 'Патч шейдера відеороликів',
+  'spv_use_lbl': 'Також пропатчити шейдер відео (виправляє розтягування катсцен для ультраширокого)',
+  'spv_why': 'Без цього патчу катсцени (внутрішньоігрові відео) будуть розтягнуті. Для 16:9 не потрібен.',
+  'spv_auto_lbl': 'Рекомендовано — патч через кеш шейдерів (автоматично)',
+  'spv_fname_lbl': 'Файл для пошуку:',
+  'spv_cache_prereq': 'Необхідно: увімкніть «Enable Shader Cache» у налаштуваннях shadPS4. Потім запустіть гру, відтворіть будь-яку катсцену хоча б раз (Options → Credits підійде), закрийте гру. Кеш шейдерів знаходиться за шляхом: <тека shadPS4>\\user\\shader\\cache',
+  'spv_cache_hint': 'Вкажіть теку вище (<shadPS4>\\user\\shader\\cache) або її ZIP-архів. Патчер автоматично знайде і пропатчить шейдер відео — знати ім\'я файлу не потрібно. Закрийте гру та shadPS4 перед патчингом.\n⚠ Важливо: після оновлення shadPS4 можливо доведеться пропатчити шейдер знову — ім\'я файлу в кеші може змінитися з новою версією емулятора.',
+  'spv_manual_prereq': 'Необхідно: увімкніть «Enable Shader Dumping» у налаштуваннях shadPS4. Запустіть гру, відтворіть будь-яку катсцену (Options → Credits підійде), закрийте гру. Шейдер з\'явиться за шляхом: <тека shadPS4>\\user\\shader\\dumps',
+  'spv_manual_lbl': 'Альтернатива — дампи шейдерів (вручну, .spv файл)',
+  'g_spv_file': 'Файл шейдера:',
+  'spv_manual_hint': 'Ім\'я файлу вказано вище — знайдіть його у теці dumps. Після патчингу результат кладеться в user\\shader\\patch\\.',
+  'g_extra_sect': 'Додатково / необов\'язкові файли ▸',
+  'extra_sect_hint': 'Ці поля необов\'язкові. eboot.bin потрібен лише для перевірки версії гри. Базовий XML — лише якщо у вас вже є власний файл патчів.',
+  'mode_desc_off': '✅ GPU отримує більше пам\'яті — CPU-пам\'ять не чіпається. Рекомендовано. Підтримується всіма актуальними збірками shadPS4 з коробки.',
+  'mem_help_tip': 'Розширений (рекомендовано): GPU отримує більше пам\'яті — CPU-пам\'ять не змінюється. Підтримується всіма актуальними збірками shadPS4 з коробки. Найбезпечніший для стабільності.\n\nСтандартний: GPU отримує більше пам\'яті — за рахунок CPU-пам\'яті (звукові буфери, купа завантаження, скріншоти зменшуються). Працює зі стоковим shadPS4, але в рідкісних випадках можливі нестабільність або краші.\n\nДля більшості: використовуйте Розширений, це підтримується всіма актуальними збірками shadPS4.',
+  'status_will_create': 'Буде створено',
+  'go_tooltip': 'Створює:\n• XML-патч для eboot.bin (роздільна здатність, аспект, HUD, камера, пам\'ять)\n• Патч шейдера відео (якщо увімкнено вище)\nРезультати зберігаються в теку «ShadPS4» поруч з програмою.',
  },
 }
 
@@ -595,6 +659,10 @@ def build_lines(W, H, aggressive=False, frac=1.0, extra=0):
     add(SITE, "e9" + rel(SITE + 5, CAVE) + "90" * 7)
     add(CAVE, "c5d2592d" + rel(CAVE + 8, CAVE + 25) + "c5d258ee" + "c5d2592d" + rel(CAVE + 20, K640)
         + "e9" + rel(CAVE + 25, BACK) + f32(R))
+    c(tr("c_treasure"))
+    # камера сцены сокровищ: горизонтальный fov 60° -> вертикальный обзор как в 16:9
+    fov = 2 * math.atan(R * math.tan(1.0470927953720093 / 2))
+    add(0x14c9890, f32(fov)); add(0x14c9928, f32(fov))
     return L, rows, info
 
 
@@ -1169,198 +1237,428 @@ def out_spv_path(spv_in, root):
     return os.path.join(root, SPV_REL, m.group(0) if m else os.path.basename(spv_in))
 
 
+
 # ----------------------------------------------------------------------------------------
-# GUI (PyQt5, Fusion, тёмная тема + зелёный акцент). Расширенные настройки скрыты за галочкой.
+# GUI v5 — переработан полностью для максимальной интуитивности (PyQt5, Fusion, тёмная тема).
+#
+# Ключевые изменения UX:
+#  • Все необязательные поля скрыты за секцией «Дополнительно» — новичок их не видит.
+#  • Шейдер: чекбокс с автоматически подставленным именем файла (cs_0x00000000562c4394_0.spv),
+#    юзер просто указывает папку (или ZIP кэша), не ищет файл вручную.
+#  • Кнопка «Создать патч» переименована и содержит tooltip с полным списком того, что она делает.
+#  • Бюджет памяти: два понятных варианта с иконкой-подсказкой, «Почему это нужно?» раскрывается.
+#  • Итоговые окна (done/warn) переписаны — чёткий список шагов «что делать дальше».
+#  • Поле eboot.bin полностью убрано из основного вида (только в «Дополнительно»).
+#  • Лейблы Optional помечены серым текстом «(необязательно)».
+#  • Статус-строка внизу показывает, что именно будет создано при нажатии кнопки.
 # ----------------------------------------------------------------------------------------
+SPV_CANON_NAME = "cs_0x00000000562c4394_0.spv"   # имя шейдера видео
+
+
 def gui():
     from PyQt5 import QtWidgets as Q, QtGui, QtCore
     app = Q.QApplication(sys.argv)
     app.setStyle("Fusion")
-    BLUE, BLUE_H, BLUE_D = "#0070d1", "#1a85e6", "#00439c"       # PlayStation blue
+
+    BLUE, BLUE_H, BLUE_D = "#0070d1", "#1a85e6", "#00439c"
     pal = QtGui.QPalette()
     C = QtGui.QColor
-    for role, col in ((QtGui.QPalette.Window, "#161a22"), (QtGui.QPalette.Base, "#0f131a"),
-                      (QtGui.QPalette.AlternateBase, "#141922"), (QtGui.QPalette.Button, "#232a36"),
-                      (QtGui.QPalette.ButtonText, "#e6ebf2"), (QtGui.QPalette.Highlight, BLUE),
-                      (QtGui.QPalette.HighlightedText, "#ffffff"), (QtGui.QPalette.Text, "#e6ebf2"),
-                      (QtGui.QPalette.WindowText, "#e6ebf2"), (QtGui.QPalette.ToolTipBase, "#232a36"),
-                      (QtGui.QPalette.ToolTipText, "#e6ebf2"), (QtGui.QPalette.BrightText, "#ffffff"),
-                      (QtGui.QPalette.Link, "#4da3ff"), (QtGui.QPalette.Light, "#33405a"),
-                      (QtGui.QPalette.Midlight, "#2a3447"), (QtGui.QPalette.Mid, "#1c2330"),
-                      (QtGui.QPalette.Dark, "#0b0e14"), (QtGui.QPalette.Shadow, "#05070b")):
+    for role, col in (
+        (QtGui.QPalette.Window, "#161a22"), (QtGui.QPalette.Base, "#0f131a"),
+        (QtGui.QPalette.AlternateBase, "#141922"), (QtGui.QPalette.Button, "#232a36"),
+        (QtGui.QPalette.ButtonText, "#e6ebf2"), (QtGui.QPalette.Highlight, BLUE),
+        (QtGui.QPalette.HighlightedText, "#ffffff"), (QtGui.QPalette.Text, "#e6ebf2"),
+        (QtGui.QPalette.WindowText, "#e6ebf2"), (QtGui.QPalette.ToolTipBase, "#232a36"),
+        (QtGui.QPalette.ToolTipText, "#e6ebf2"), (QtGui.QPalette.BrightText, "#ffffff"),
+        (QtGui.QPalette.Link, "#4da3ff"), (QtGui.QPalette.Light, "#33405a"),
+        (QtGui.QPalette.Midlight, "#2a3447"), (QtGui.QPalette.Mid, "#1c2330"),
+        (QtGui.QPalette.Dark, "#0b0e14"), (QtGui.QPalette.Shadow, "#05070b"),
+    ):
         pal.setColor(role, C(col))
-    if hasattr(QtGui.QPalette, "PlaceholderText"): pal.setColor(QtGui.QPalette.PlaceholderText, C("#7a8599"))
+    if hasattr(QtGui.QPalette, "PlaceholderText"):
+        pal.setColor(QtGui.QPalette.PlaceholderText, C("#7a8599"))
     for role in (QtGui.QPalette.Text, QtGui.QPalette.ButtonText, QtGui.QPalette.WindowText):
         pal.setColor(QtGui.QPalette.Disabled, role, C("#667086"))
     pal.setColor(QtGui.QPalette.Disabled, QtGui.QPalette.Highlight, C("#2b3447"))
     app.setPalette(pal)
-    # Поля, списки, спинбоксы, чекбоксы и кнопки не стилизуем - их рисует сам Fusion (по палитре).
+
     app.setStyleSheet("""
-        QGroupBox{font-weight:600;border:1px solid #2b3441;border-radius:6px;margin-top:12px;padding:10px 8px 6px 8px;background:#1a1f29}
-        QGroupBox::title{subcontrol-origin:margin;left:12px;padding:0 5px;color:#4da3ff}
-        QLabel#title{font-size:19px;font-weight:700;color:#f2f6fc}
-        QLabel#subtitle{color:#8793a8}
-        QLabel#chip{background:#10294a;border:1px solid #1d4f8a;border-radius:9px;padding:3px 10px;color:#9fcdff}
-        QLabel#chip[warn="true"]{background:#3d3416;border-color:#7a6422;color:#f0d58a}
-        QPushButton#primary{background:%(b)s;color:#ffffff;font-weight:700;font-size:14px;padding:9px 26px;border:1px solid %(bd)s;border-radius:4px}
-        QPushButton#primary:hover{background:%(bh)s}
-        QPushButton#primary:disabled{background:#1d2a40;color:#6f7d96;border-color:#1d2a40}
-        QFrame#dmem{border:1px solid #1d4f8a;border-radius:8px;background:#0f2442}
-        QFrame#dmem[state="warn"]{border-color:#7a6422;background:#2f2b17}
-        QLabel#dmbig{font-size:26px;font-weight:700;color:#66b2ff}
-        QFrame#dmem[state="warn"] QLabel#dmbig{color:#f3c75a}
-        QLabel#dmhex{color:#93a0b6;font-family:Consolas,Menlo,monospace}
-        QPlainTextEdit{font-family:Consolas,Menlo,monospace;font-size:11px}
+        QGroupBox {
+            font-weight: 600; border: 1px solid #2b3441; border-radius: 6px;
+            margin-top: 12px; padding: 10px 8px 6px 8px; background: #1a1f29;
+        }
+        QGroupBox::title { subcontrol-origin: margin; left: 12px; padding: 0 5px; color: #4da3ff; }
+        QLabel#title  { font-size: 19px; font-weight: 700; color: #f2f6fc; }
+        QLabel#subtitle { color: #8793a8; }
+        QLabel#hint { color: #6a7a94; font-style: italic; }
+        QLabel#optional_tag { color: #56657a; font-size: 10px; }
+        QLabel#chip { background: #10294a; border: 1px solid #1d4f8a; border-radius: 9px;
+                      padding: 3px 10px; color: #9fcdff; }
+        QLabel#chip[warn="true"] { background: #3d3416; border-color: #7a6422; color: #f0d58a; }
+        QPushButton#primary {
+            background: %(b)s; color: #ffffff; font-weight: 700; font-size: 14px;
+            padding: 10px 30px; border: 1px solid %(bd)s; border-radius: 4px;
+        }
+        QPushButton#primary:hover { background: %(bh)s; }
+        QPushButton#primary:disabled { background: #1d2a40; color: #6f7d96; border-color: #1d2a40; }
+        QPushButton#secondary {
+            background: #232a36; color: #c8d4e6; border: 1px solid #2e3d52;
+            border-radius: 4px; padding: 5px 12px;
+        }
+        QPushButton#secondary:hover { background: #2e3d52; }
+        QFrame#dmem { border: 1px solid #1d4f8a; border-radius: 8px; background: #0f2442; }
+        QFrame#dmem[state="warn"] { border-color: #7a6422; background: #2f2b17; }
+        QFrame#dmem[state="err"]  { border-color: #8b2222; background: #2a1414; }
+        QLabel#dmbig { font-size: 24px; font-weight: 700; color: #66b2ff; }
+        QFrame#dmem[state="warn"] QLabel#dmbig { color: #f3c75a; }
+        QFrame#dmem[state="err"]  QLabel#dmbig { color: #f07070; }
+        QLabel#dmhex { color: #93a0b6; font-family: Consolas,Menlo,monospace; }
+        QPlainTextEdit { font-family: Consolas,Menlo,monospace; font-size: 11px; }
+        QLabel#step_title { font-weight: 700; color: #4da3ff; }
+        QFrame#statusbar { background: #111722; border-top: 1px solid #2b3441; }
+        QLabel#statuslbl { color: #8799b6; font-size: 11px; padding: 4px 8px; }
+        QLabel#statuslbl[active="true"] { color: #a3c8ff; }
+        QToolButton#helpbtn { border: none; color: #4da3ff; font-weight: 700;
+                              background: transparent; padding: 0 3px; font-size: 12px; }
+        QToolButton#helpbtn:hover { color: #80c0ff; }
     """ % dict(b=BLUE, bh=BLUE_H, bd=BLUE_D))
 
+    # -----------------------------------------------------------------------
+    # Вспомогательные виджеты
+    # -----------------------------------------------------------------------
+    def mk_label(text, obj=None, wrap=False):
+        lb = Q.QLabel(text)
+        if obj: lb.setObjectName(obj)
+        if wrap: lb.setWordWrap(True)
+        return lb
+
+    def help_btn(tip):
+        """Маленькая кнопка «?» с всплывающей подсказкой."""
+        b = Q.QToolButton()
+        b.setObjectName("helpbtn")
+        b.setText("?")
+        b.setToolTip(tip)
+        b.setToolTipDuration(10000)
+        b.clicked.connect(lambda: Q.QMessageBox.information(None, tr("help_title"), tip))
+        return b
+
     class FileRow(Q.QWidget):
-        def __init__(s, label, flt, placeholder=""):
+        """Строка выбора файла: лейбл + поле + кнопка Browse."""
+        def __init__(s, label, flt, placeholder="", optional=False):
             super().__init__()
-            h = Q.QHBoxLayout(s); h.setContentsMargins(0, 0, 0, 0)
-            s.lbl = Q.QLabel(label); s.lbl.setMinimumWidth(110)
+            h = Q.QHBoxLayout(s); h.setContentsMargins(0, 0, 0, 0); h.setSpacing(6)
+            lbl_w = Q.QWidget(); lbl_h = Q.QHBoxLayout(lbl_w); lbl_h.setContentsMargins(0,0,0,0); lbl_h.setSpacing(2)
+            lbl = Q.QLabel(label); lbl.setMinimumWidth(105)
+            lbl_h.addWidget(lbl)
+            if optional:
+                opt = mk_label(tr("opt_tag"), "optional_tag"); lbl_h.addWidget(opt)
+            lbl_h.addStretch(1)
             s.edit = Q.QLineEdit(); s.edit.setPlaceholderText(placeholder); s.edit.setClearButtonEnabled(True)
-            b = Q.QPushButton(tr("g_browse"))
-            h.addWidget(s.lbl); h.addWidget(s.edit, 1); h.addWidget(b)
+            b = Q.QPushButton(tr("g_browse")); b.setObjectName("secondary")
+            h.addWidget(lbl_w); h.addWidget(s.edit, 1); h.addWidget(b)
             s.flt = flt
             b.clicked.connect(s.pick)
-
         def pick(s):
-            f = Q.QFileDialog.getOpenFileName(s, s.lbl.text(), s.edit.text(), s.flt)[0]
+            f = Q.QFileDialog.getOpenFileName(s, s.edit.placeholderText(), s.edit.text(), s.flt)[0]
             if f: s.edit.setText(f)
-
         def text(s): return s.edit.text().strip()
 
     class CacheRow(Q.QWidget):
-        """Путь к кэшу шейдеров: папка или ZIP-архив (две кнопки выбора)."""
+        """Строка выбора папки или ZIP кэша шейдеров — с двумя кнопками."""
         def __init__(s):
             super().__init__()
-            h = Q.QHBoxLayout(s); h.setContentsMargins(0, 0, 0, 0)
-            s.lbl = Q.QLabel(tr("g_cachep")); s.lbl.setMinimumWidth(110)
+            h = Q.QHBoxLayout(s); h.setContentsMargins(0, 0, 0, 0); h.setSpacing(6)
+            lw = Q.QWidget(); lh = Q.QHBoxLayout(lw); lh.setContentsMargins(0,0,0,0); lh.setSpacing(2)
+            lbl = Q.QLabel(tr("g_cachep")); lbl.setMinimumWidth(105)
+            opt = mk_label(tr("opt_tag"), "optional_tag")
+            lh.addWidget(lbl); lh.addWidget(opt); lh.addStretch(1)
             s.edit = Q.QLineEdit(); s.edit.setPlaceholderText(tr("ph_cache")); s.edit.setClearButtonEnabled(True)
-            bd, bz = Q.QPushButton(tr("g_dir")), Q.QPushButton(tr("g_zip"))
-            h.addWidget(s.lbl); h.addWidget(s.edit, 1); h.addWidget(bd); h.addWidget(bz)
+            bd = Q.QPushButton(tr("g_dir")); bd.setObjectName("secondary")
+            bz = Q.QPushButton(tr("g_zip")); bz.setObjectName("secondary")
+            h.addWidget(lw); h.addWidget(s.edit, 1); h.addWidget(bd); h.addWidget(bz)
             bd.clicked.connect(s.pick_dir); bz.clicked.connect(s.pick_zip)
-
         def pick_dir(s):
             f = Q.QFileDialog.getExistingDirectory(s, tr("g_cache"), s.edit.text())
             if f: s.edit.setText(f)
-
         def pick_zip(s):
             f = Q.QFileDialog.getOpenFileName(s, tr("g_cache"), s.edit.text(), "ZIP (*.zip);;*")[0]
             if f: s.edit.setText(f)
-
         def text(s): return s.edit.text().strip()
 
+    # -----------------------------------------------------------------------
+    # Главное окно
+    # -----------------------------------------------------------------------
     class Win(Q.QMainWindow):
-        PRESETS = [("21:9  2560×1080", 2560, 1080), ("21:9  3440×1440", 3440, 1440), ("21:9  2240×960", 2240, 960),
-                   ("21:9  3840×1646", 3840, 1646), ("32:9  3840×1080", 3840, 1080), ("16:10 1920×1200", 1920, 1200),
-                   ("16:10 2560×1600", 2560, 1600), ("16:9  2560×1440", 2560, 1440), (None, 0, 0)]
+        PRESETS = [
+            ("21:9  2560×1080", 2560, 1080), ("21:9  3440×1440", 3440, 1440),
+            ("21:9  2240×960",  2240, 960),  ("21:9  3840×1646", 3840, 1646),
+            ("32:9  3840×1080", 3840, 1080), ("16:10 1920×1200", 1920, 1200),
+            ("16:10 2560×1600", 2560, 1600), ("16:9  2560×1440", 2560, 1440),
+            (None, 0, 0),
+        ]
 
         def __init__(s):
             super().__init__()
             s.setWindowTitle(tr("g_title") + " (shadPS4)")
-            s.resize(1180, 760)
-            c = Q.QWidget(); s.setCentralWidget(c)
-            root = Q.QVBoxLayout(c); root.setContentsMargins(14, 10, 14, 12)
-            t = Q.QLabel(tr("g_title")); t.setObjectName("title")
-            st = Q.QLabel(tr("g_sub")); st.setObjectName("subtitle")
-            root.addWidget(t); root.addWidget(st)
-            cols = Q.QHBoxLayout(); root.addLayout(cols, 1)
-            left, right = Q.QVBoxLayout(), Q.QVBoxLayout()
-            cols.addLayout(left, 11); cols.addLayout(right, 10)
+            s.resize(1200, 800)
 
-            # --- разрешение
-            g2 = Q.QGroupBox(tr("g_res")); gv = Q.QVBoxLayout(g2); h = Q.QHBoxLayout()
-            s.pre = Q.QComboBox(); [s.pre.addItem(p[0] or tr("g_custom")) for p in s.PRESETS]
+            cw = Q.QWidget(); s.setCentralWidget(cw)
+            root_v = Q.QVBoxLayout(cw); root_v.setContentsMargins(0, 0, 0, 0); root_v.setSpacing(0)
+
+            # Заголовок
+            hdr = Q.QWidget(); hdr.setStyleSheet("background:#1a1f29; border-bottom:1px solid #2b3441;")
+            hdr_h = Q.QHBoxLayout(hdr); hdr_h.setContentsMargins(16, 10, 16, 10)
+            tl = Q.QLabel(tr("g_title")); tl.setObjectName("title")
+            st = Q.QLabel(tr("g_sub"));  st.setObjectName("subtitle")
+            hdr_v = Q.QVBoxLayout(); hdr_v.setSpacing(2)
+            hdr_v.addWidget(tl); hdr_v.addWidget(st)
+            hdr_h.addLayout(hdr_v, 1)
+            root_v.addWidget(hdr)
+
+            # Основное содержимое
+            body = Q.QWidget(); body_h = Q.QHBoxLayout(body)
+            body_h.setContentsMargins(14, 10, 14, 8); body_h.setSpacing(14)
+            root_v.addWidget(body, 1)
+
+            left  = Q.QVBoxLayout(); left.setSpacing(8)
+            right = Q.QVBoxLayout(); right.setSpacing(8)
+            body_h.addLayout(left, 55); body_h.addLayout(right, 45)
+
+            # ── ШАГ 1: Разрешение ──────────────────────────────────────────
+            g_res = Q.QGroupBox("1. " + tr("g_res")); gv = Q.QVBoxLayout(g_res)
+            hrow = Q.QHBoxLayout(); hrow.setSpacing(10)
+            s.pre = Q.QComboBox()
+            for p in s.PRESETS: s.pre.addItem(p[0] or tr("g_custom"))
             s.w = Q.QSpinBox(); s.w.setRange(640, 16384); s.w.setValue(2560); s.w.setSuffix(" px")
             s.h = Q.QSpinBox(); s.h.setRange(360, 8640); s.h.setValue(1080); s.h.setSuffix(" px")
-            for x in (Q.QLabel(tr("g_preset")), s.pre, Q.QLabel(tr("g_width")), s.w, Q.QLabel(tr("g_height")), s.h): h.addWidget(x)
-            h.addStretch(1); gv.addLayout(h)
+            for x in (Q.QLabel(tr("g_preset")), s.pre,
+                      Q.QLabel(tr("g_width")),  s.w,
+                      Q.QLabel(tr("g_height")), s.h):
+                hrow.addWidget(x)
+            hrow.addStretch(1); gv.addLayout(hrow)
             s.info = Q.QLabel(); s.info.setObjectName("chip"); s.info.setWordWrap(True)
-            gv.addWidget(s.info); left.addWidget(g2)
+            gv.addWidget(s.info)
+            left.addWidget(g_res)
 
-            # --- файлы
-            g = Q.QGroupBox(tr("g_files")); gl = Q.QVBoxLayout(g)
-            s.eboot = FileRow(tr("g_eboot"), "eboot.bin (*.bin);;*", tr("ph_eboot"))
-            s.xmlin = FileRow(tr("g_xmlin"), "XML (*.xml)", tr("ph_xmlin"))
-            s.spvin = FileRow(tr("g_spv"), "SPIR-V (*.spv)", tr("ph_spv"))
-            for r in (s.eboot, s.xmlin, s.spvin): gl.addWidget(r)
-            s.gh = Q.QCheckBox(tr("g_gh")); s.gh.setChecked(True); gl.addWidget(s.gh)
-            gh_hint = Q.QLabel(tr("g_ghhint")); gh_hint.setObjectName("subtitle"); gh_hint.setWordWrap(True); gl.addWidget(gh_hint)
-            s.xmlin.edit.textChanged.connect(lambda t: s.gh.setEnabled(not t.strip()))   # свой базовый XML заменяет GitHub
-            hint = Q.QLabel(tr("g_outhint")); hint.setObjectName("subtitle"); hint.setWordWrap(True); gl.addWidget(hint)
-            left.addWidget(g)
+            # ── ШАГ 2: Шейдер видео (необязательно для 16:9) ──────────────
+            g_spv = Q.QGroupBox("2. " + tr("g_spv_group")); gspv = Q.QVBoxLayout(g_spv)
 
-            # --- кэш шейдеров (заглушка под баг shadPS4)
-            gc = Q.QGroupBox(tr("g_cache")); gcl = Q.QVBoxLayout(gc)
-            s.cache = CacheRow(); gcl.addWidget(s.cache)
-            ch = Q.QLabel(tr("g_cachehint")); ch.setObjectName("subtitle"); ch.setWordWrap(True); gcl.addWidget(ch)
-            left.addWidget(gc)
+            # Чекбокс включения + краткое пояснение
+            s.spv_use = Q.QCheckBox(tr("spv_use_lbl")); s.spv_use.setChecked(False)
+            spv_why = mk_label(tr("spv_why"), "subtitle", wrap=True)
+            gspv.addWidget(s.spv_use); gspv.addWidget(spv_why)
 
-            # --- память: основной режим + расширенные настройки за галочкой
-            g4 = Q.QGroupBox(tr("g_mem")); gm = Q.QVBoxLayout(g4)
-            s.mode = Q.QComboBox(); s.mode.addItem(tr("mode_off")); s.mode.addItem(tr("mode_full")); s.mode.setCurrentIndex(1)
-            gm.addWidget(s.mode)
+            # Блок выбора файла — появляется только когда чекбокс включён
+            s.spv_block = Q.QWidget(); sb = Q.QVBoxLayout(s.spv_block); sb.setContentsMargins(0,4,0,0); sb.setSpacing(4)
+
+            # ── Метод А: кэш шейдеров (рекомендуется) ──
+            spv_auto_lbl = mk_label(tr("spv_auto_lbl"), "step_title")
+            sb.addWidget(spv_auto_lbl)
+            sb.addWidget(mk_label(tr("spv_cache_prereq"), "hint", wrap=True))
+
+            cache_row_h = Q.QHBoxLayout(); cache_row_h.setSpacing(6)
+            cache_row_h.addWidget(mk_label(tr("g_cachep")))
+            s.cache = Q.QLineEdit(); s.cache.setPlaceholderText(tr("ph_cache")); s.cache.setClearButtonEnabled(True)
+            b_cache_dir = Q.QPushButton(tr("g_dir")); b_cache_dir.setObjectName("secondary")
+            b_cache_zip = Q.QPushButton(tr("g_zip")); b_cache_zip.setObjectName("secondary")
+            b_cache_dir.clicked.connect(s.pick_cache_dir); b_cache_zip.clicked.connect(s.pick_cache_zip)
+            cache_row_h.addWidget(s.cache, 1); cache_row_h.addWidget(b_cache_dir); cache_row_h.addWidget(b_cache_zip)
+            sb.addLayout(cache_row_h)
+            # Подсказка: где находится папка кэша
+            sb.addWidget(mk_label(tr("spv_cache_hint"), "hint", wrap=True))
+
+            # ── Разделитель ──
+            sep = Q.QFrame(); sep.setFrameShape(Q.QFrame.HLine); sep.setStyleSheet("color:#2b3441"); sb.addWidget(sep)
+
+            # ── Метод Б: ручной .spv файл ──
+            spv_man_lbl = mk_label(tr("spv_manual_lbl"), "step_title"); sb.addWidget(spv_man_lbl)
+            sb.addWidget(mk_label(tr("spv_manual_prereq"), "hint", wrap=True))
+
+            # Показываем ожидаемое имя файла — пользователь сразу знает что искать
+            spv_name_row = Q.QHBoxLayout(); spv_name_row.setSpacing(6)
+            spv_name_row.addWidget(mk_label(tr("spv_fname_lbl")))
+            s.spv_name_chip = Q.QLabel(SPV_CANON_NAME)
+            s.spv_name_chip.setObjectName("chip")
+            s.spv_name_chip.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+            spv_name_row.addWidget(s.spv_name_chip); spv_name_row.addStretch(1)
+            sb.addLayout(spv_name_row)
+
+            man_row_h = Q.QHBoxLayout(); man_row_h.setSpacing(6)
+            man_row_h.addWidget(mk_label(tr("g_spv_file")))
+            s.spvin = Q.QLineEdit(); s.spvin.setPlaceholderText(SPV_CANON_NAME); s.spvin.setClearButtonEnabled(True)
+            b_spv = Q.QPushButton(tr("g_browse")); b_spv.setObjectName("secondary")
+            b_spv.clicked.connect(s.pick_spv)
+            man_row_h.addWidget(s.spvin, 1); man_row_h.addWidget(b_spv)
+            sb.addLayout(man_row_h)
+            sb.addWidget(mk_label(tr("spv_manual_hint"), "hint", wrap=True))
+
+            gspv.addWidget(s.spv_block)
+            s.spv_block.setVisible(False)
+            s.spv_use.toggled.connect(lambda v: s.spv_block.setVisible(v))
+            s.spv_use.toggled.connect(s.update_status)
+            s.cache.textChanged.connect(s.update_status)
+            s.spvin.textChanged.connect(s.update_status)
+            left.addWidget(g_spv)
+
+            # ── ШАГ 3: Бюджет памяти ──────────────────────────────────────
+            g_mem = Q.QGroupBox("3. " + tr("g_mem")); gm = Q.QVBoxLayout(g_mem); gm.setSpacing(6)
+
+            mem_top = Q.QHBoxLayout()
+            s.mode = Q.QComboBox()
+            if LANG == "en":
+                s.mode.addItem("✅  Extended — keep full CPU memory  (recommended, supported by all recent shadPS4 builds)")
+                s.mode.addItem("⚠️  Standard — reduce CPU memory  (stock shadPS4, may cause instability)")
+            elif LANG == "uk":
+                s.mode.addItem("✅  Розширений — зберегти CPU-пам'ять  (рекомендовано, підтримується з коробки)")
+                s.mode.addItem("⚠️  Стандартний — урізати CPU-пам'ять  (стоковий shadPS4, можливі проблеми)")
+            else:
+                s.mode.addItem("✅  Расширенный — сохранить CPU-память  (рекомендуется, поддерживается из коробки)")
+                s.mode.addItem("⚠️  Стандартный — урезать CPU-память  (стоковый shadPS4, возможны проблемы)")
+            s.mode.setCurrentIndex(0)
+            s.mode.setMinimumWidth(300)
+
+            mem_help = help_btn(tr("mem_help_tip"))
+            mem_top.addWidget(s.mode, 1); mem_top.addWidget(mem_help)
+            gm.addLayout(mem_top)
+
+            s.mode_desc = mk_label(tr("mode_desc_off"), "subtitle", wrap=True); gm.addWidget(s.mode_desc)
+
+            # Расширенные настройки (скрыты)
             s.advchk = Q.QCheckBox(tr("g_adv")); gm.addWidget(s.advchk)
-            s.adv = Q.QWidget(); av = Q.QVBoxLayout(s.adv); av.setContentsMargins(18, 0, 0, 0)
+            s.adv = Q.QWidget(); av = Q.QVBoxLayout(s.adv); av.setContentsMargins(18, 0, 0, 0); av.setSpacing(4)
             s.manual = Q.QCheckBox(tr("adv_manual"))
-            s.extra = Q.QSpinBox(); s.extra.setRange(0, 4096); s.extra.setSingleStep(64); s.extra.setValue(512); s.extra.setSuffix(" МБ" if LANG != "en" else " MB")
+            s.extra  = Q.QSpinBox(); s.extra.setRange(0, 4096); s.extra.setSingleStep(64)
+            s.extra.setValue(512); s.extra.setSuffix(" МБ" if LANG != "en" else " MB")
             s.extra.setToolTip(tr("adv_extra_tip"))
-            s.frac = Q.QSpinBox(); s.frac.setRange(10, 100); s.frac.setValue(100); s.frac.setSuffix(" %"); s.frac.setToolTip(tr("adv_frac_tip"))
-            s.aggr = Q.QCheckBox(tr("adv_aggr"))
-            s.keep = Q.QCheckBox(tr("adv_keep"))
+            s.frac   = Q.QSpinBox(); s.frac.setRange(10, 100); s.frac.setValue(100); s.frac.setSuffix(" %")
+            s.frac.setToolTip(tr("adv_frac_tip"))
+            s.aggr   = Q.QCheckBox(tr("adv_aggr"))
+            s.keep   = Q.QCheckBox(tr("adv_keep"))
             hm = Q.QHBoxLayout(); hm.addWidget(s.manual); hm.addWidget(s.extra); hm.addStretch(1)
             hf = Q.QHBoxLayout(); hf.addWidget(Q.QLabel(tr("adv_frac"))); hf.addWidget(s.frac); hf.addStretch(1)
-            for l in (hm, hf): av.addLayout(l)
-            av.addWidget(s.aggr); av.addWidget(s.keep)
-            s.adv.setVisible(False); gm.addWidget(s.adv); left.addWidget(g4); left.addStretch(1)
+            av.addLayout(hm); av.addLayout(hf); av.addWidget(s.aggr); av.addWidget(s.keep)
+            s.adv.setVisible(False); gm.addWidget(s.adv)
+            left.addWidget(g_mem)
 
-            # --- dmem-карточка
-            s.card = Q.QFrame(); s.card.setObjectName("dmem"); cv = Q.QVBoxLayout(s.card)
-            cap = Q.QLabel(tr("card_cap")); cap.setStyleSheet("font-weight:600")
+            # ── Дополнительно (необязательно) ─────────────────────────────
+            s.extra_chk = Q.QCheckBox(tr("g_extra_sect")); left.addWidget(s.extra_chk)
+            s.extra_sect = Q.QGroupBox(""); ex = Q.QVBoxLayout(s.extra_sect); ex.setSpacing(4)
+            ex.addWidget(mk_label(tr("extra_sect_hint"), "hint", wrap=True))
+
+            # eboot.bin
+            s.eboot = FileRow(tr("g_eboot"), "eboot.bin (*.bin);;*", tr("ph_eboot"), optional=True)
+            ex.addWidget(s.eboot)
+
+            # Базовый XML
+            xml_row_h = Q.QHBoxLayout(); xml_row_h.setSpacing(6)
+            xml_lw = Q.QWidget(); xml_lh = Q.QHBoxLayout(xml_lw); xml_lh.setContentsMargins(0,0,0,0); xml_lh.setSpacing(2)
+            xml_lh.addWidget(mk_label(tr("g_xmlin"))); xml_lh.addWidget(mk_label(tr("opt_tag"), "optional_tag")); xml_lh.addStretch(1)
+            s.xmlin = Q.QLineEdit(); s.xmlin.setPlaceholderText(tr("ph_xmlin")); s.xmlin.setClearButtonEnabled(True)
+            b_xml = Q.QPushButton(tr("g_browse")); b_xml.setObjectName("secondary")
+            b_xml.clicked.connect(lambda: s._pick_xml())
+            xml_row_h.addWidget(xml_lw); xml_row_h.addWidget(s.xmlin, 1); xml_row_h.addWidget(b_xml)
+            ex.addLayout(xml_row_h)
+
+            # GitHub чекбокс
+            s.gh = Q.QCheckBox(tr("g_gh")); s.gh.setChecked(True); ex.addWidget(s.gh)
+            ex.addWidget(mk_label(tr("g_ghhint"), "hint", wrap=True))
+            s.xmlin.textChanged.connect(lambda t: s.gh.setEnabled(not t.strip()))
+
+            s.extra_sect.setVisible(False)
+            s.extra_chk.toggled.connect(s.extra_sect.setVisible)
+            left.addWidget(s.extra_sect)
+            left.addStretch(1)
+
+            # ── Правая колонка: dmem карточка + расчёт ────────────────────
+            s.card = Q.QFrame(); s.card.setObjectName("dmem"); cv = Q.QVBoxLayout(s.card); cv.setSpacing(4)
+            cap_lbl = mk_label(tr("card_cap")); cap_lbl.setStyleSheet("font-weight:600")
             s.dmbig = Q.QLabel(); s.dmbig.setObjectName("dmbig")
             s.dmhex = Q.QLabel(); s.dmhex.setObjectName("dmhex")
             s.dmtxt = Q.QLabel(); s.dmtxt.setWordWrap(True)
-            for x in (cap, s.dmbig, s.dmhex, s.dmtxt): cv.addWidget(x)
+            for x in (cap_lbl, s.dmbig, s.dmhex, s.dmtxt): cv.addWidget(x)
             right.addWidget(s.card)
 
-            # --- таблица
             g3 = Q.QGroupBox(tr("g_calc")); l3 = Q.QVBoxLayout(g3)
-            s.sum = Q.QLabel(); s.sum.setWordWrap(True)
-            s.tbl = Q.QTableWidget(0, 3); s.tbl.setHorizontalHeaderLabels([tr("col_entry"), tr("col_was"), tr("col_now")])
+            s.sum = Q.QLabel(); s.sum.setWordWrap(True); l3.addWidget(s.sum)
+            s.tbl = Q.QTableWidget(0, 3)
+            s.tbl.setHorizontalHeaderLabels([tr("col_entry"), tr("col_was"), tr("col_now")])
             s.tbl.horizontalHeader().setSectionResizeMode(0, Q.QHeaderView.Stretch)
             s.tbl.verticalHeader().setVisible(False)
-            s.tbl.setEditTriggers(Q.QAbstractItemView.NoEditTriggers); s.tbl.setAlternatingRowColors(True)
-            s.tbl.setMinimumHeight(170)
-            l3.addWidget(s.sum); l3.addWidget(s.tbl); right.addWidget(g3, 1)
-            s.log = Q.QPlainTextEdit(); s.log.setReadOnly(True); s.log.setMaximumHeight(100)
+            s.tbl.setEditTriggers(Q.QAbstractItemView.NoEditTriggers)
+            s.tbl.setAlternatingRowColors(True); s.tbl.setMinimumHeight(160)
+            l3.addWidget(s.tbl); right.addWidget(g3, 1)
+
+            s.log = Q.QPlainTextEdit(); s.log.setReadOnly(True); s.log.setMaximumHeight(90)
             s.log.setPlaceholderText(tr("g_log")); right.addWidget(s.log)
 
+            # ── Статус-строка + кнопка ────────────────────────────────────
+            bot = Q.QFrame(); bot.setObjectName("statusbar")
+            bot_h = Q.QHBoxLayout(bot); bot_h.setContentsMargins(14, 6, 14, 6)
+            s.status_lbl = Q.QLabel(); s.status_lbl.setObjectName("statuslbl"); s.status_lbl.setWordWrap(True)
             s.go = Q.QPushButton(tr("g_go")); s.go.setObjectName("primary")
-            root.addWidget(s.go, alignment=QtCore.Qt.AlignRight)
+            s.go.setToolTip(tr("go_tooltip"))
+            bot_h.addWidget(s.status_lbl, 1); bot_h.addWidget(s.go)
+            root_v.addWidget(bot)
 
+            # ── Сигналы ───────────────────────────────────────────────────
             s.pre.currentIndexChanged.connect(s.on_pre)
             s.w.valueChanged.connect(s.refresh); s.h.valueChanged.connect(s.refresh)
+            s.mode.currentIndexChanged.connect(s.on_mode_change)
             s.mode.currentIndexChanged.connect(s.refresh)
             s.advchk.toggled.connect(s.on_adv)
             for x in (s.aggr, s.manual): x.toggled.connect(s.refresh)
             s.frac.valueChanged.connect(s.refresh); s.extra.valueChanged.connect(s.refresh)
             s.go.clicked.connect(s.run)
-            s.eboot.edit.editingFinished.connect(s.check)
+            s.eboot.edit.editingFinished.connect(s.check_eboot)
             s.on_pre(0)
+
+        # ── helpers ───────────────────────────────────────────────────────
+        def _pick_xml(s):
+            f = Q.QFileDialog.getOpenFileName(s, tr("g_xmlin"), s.xmlin.text(), "XML (*.xml);;*")[0]
+            if f: s.xmlin.setText(f)
+
+        def pick_cache_dir(s):
+            f = Q.QFileDialog.getExistingDirectory(s, tr("g_cache"), s.cache.text())
+            if f: s.cache.setText(f)
+
+        def pick_cache_zip(s):
+            f = Q.QFileDialog.getOpenFileName(s, tr("g_cache"), s.cache.text(), "ZIP (*.zip);;*")[0]
+            if f: s.cache.setText(f)
+
+        def pick_spv(s):
+            f = Q.QFileDialog.getOpenFileName(s, tr("g_spv"), s.spvin.text(), "SPIR-V (*.spv);;*")[0]
+            if f: s.spvin.setText(f)
 
         def adv_on(s): return s.advchk.isChecked()
 
         def mode_key(s):
             if s.adv_on() and s.manual.isChecked(): return "custom"
-            return "off" if s.mode.currentIndex() == 0 else "full"
+            return "full" if s.mode.currentIndex() == 0 else "off"
 
         def extra_val(s): return resolve_extra(s.mode_key(), s.extra.value())
         def aggr_val(s): return s.adv_on() and s.aggr.isChecked() and s.mode_key() != "full"
         def frac_val(s): return (s.frac.value() if s.adv_on() else 100) / 100
 
-        def on_adv(s, on):
-            s.adv.setVisible(on); s.refresh()
+        def on_mode_change(s, idx):
+            # idx 0 = расширенный (full/рекомендуется), idx 1 = стандартный (off/урезание CPU)
+            if LANG == "en":
+                descs = [
+                    "✅ GPU gets more memory — CPU memory stays untouched. Recommended. Supported by all recent shadPS4 builds out of the box.",
+                    "⚠️ GPU gets more memory — taken from CPU memory (sound, loading heap, screenshot buffers are reduced). Works with stock shadPS4, but may cause instability or crashes in rare cases.",
+                ]
+            elif LANG == "uk":
+                descs = [
+                    "✅ GPU отримує більше пам'яті — CPU-пам'ять не чіпається. Рекомендовано. Підтримується всіма актуальними збірками shadPS4 з коробки.",
+                    "⚠️ GPU отримує більше пам'яті — за рахунок CPU-пам'яті (звук, купа завантаження, буфери скріншотів зменшуються). Працює зі стоковим shadPS4, але в рідкісних випадках можливі збої або краші.",
+                ]
+            else:
+                descs = [
+                    "✅ GPU получает больше памяти — CPU-память не трогается. Рекомендуется. Поддерживается всеми актуальными сборками shadPS4 из коробки.",
+                    "⚠️ GPU получает больше памяти — за счёт CPU-памяти (звук, куча загрузки, буферы скриншотов уменьшаются). Работает со стоковым shadPS4, но в редких случаях возможны зависания или краши.",
+                ]
+            s.mode_desc.setText(descs[idx] if idx < len(descs) else "")
+
+        def on_adv(s, on): s.adv.setVisible(on); s.refresh()
 
         def on_pre(s, i):
             _, w, h = s.PRESETS[i]
@@ -1370,11 +1668,52 @@ def gui():
                 s.w.blockSignals(False); s.h.blockSignals(False)
             s.refresh()
 
-        def say(s, t):
-            s.log.appendPlainText(t); Q.QApplication.processEvents()
+        def say(s, t): s.log.appendPlainText(t); Q.QApplication.processEvents()
 
         def repolish(s, *ws):
             for w_ in ws: w_.style().unpolish(w_); w_.style().polish(w_)
+
+        def update_status(s):
+            """Обновляет строку внизу: показывает что именно будет создано."""
+            parts = []
+            Wd, Hd = s.w.value(), s.h.value()
+            if LANG == "en":
+                parts.append("XML patch for eboot.bin")
+                if not is_169(Wd, Hd):
+                    if s.spv_use.isChecked():
+                        if s.cache.text().strip():
+                            parts.append("video shader patch directly in cache")
+                        elif s.spvin.text().strip():
+                            parts.append("video shader patch (manual file)")
+                        else:
+                            parts.append("video shader patch (no file selected yet)")
+                lbl = tr("status_will_create") + ": " + " + ".join(parts)
+            elif LANG == "uk":
+                parts.append("XML-патч для eboot.bin")
+                if not is_169(Wd, Hd):
+                    if s.spv_use.isChecked():
+                        if s.cache.text().strip():
+                            parts.append("патч шейдера відео в кеші")
+                        elif s.spvin.text().strip():
+                            parts.append("патч шейдера відео (ручний файл)")
+                        else:
+                            parts.append("патч шейдера відео (файл не вказано)")
+                lbl = tr("status_will_create") + ": " + " + ".join(parts)
+            else:
+                parts.append("XML-патч для eboot.bin")
+                if not is_169(Wd, Hd):
+                    if s.spv_use.isChecked():
+                        if s.cache.text().strip():
+                            parts.append("патч шейдера видео прямо в кэше")
+                        elif s.spvin.text().strip():
+                            parts.append("патч шейдера видео (ручной файл)")
+                        else:
+                            parts.append("патч шейдера видео (файл не выбран)")
+                lbl = tr("status_will_create") + ": " + " + ".join(parts)
+            s.status_lbl.setText(lbl)
+            has = bool(parts)
+            s.status_lbl.setProperty("active", "true" if has else "false")
+            s.repolish(s.status_lbl)
 
         def refresh(s):
             Wd, Hd = s.w.value(), s.h.value()
@@ -1384,7 +1723,9 @@ def gui():
             s.extra.setEnabled(s.adv_on() and s.manual.isChecked())
             s.aggr.setEnabled(s.mode_key() != "full")
             s.info.setProperty("warn", R < 0.999)
-            s.info.setText(tr("g_ratio", Wd / Hd, Wd // g, Hd // g, R) + (tr("g_narrow") if R < 0.999 else "") + (tr("g_169") if is_169(Wd, Hd) else ""))
+            s.info.setText(tr("g_ratio", Wd / Hd, Wd // g, Hd // g, R)
+                           + (tr("g_narrow") if R < 0.999 else "")
+                           + (tr("g_169") if is_169(Wd, Hd) else ""))
             s.repolish(s.info)
             s.tbl.setRowCount(0)
             try:
@@ -1400,15 +1741,18 @@ def gui():
                 exp = info["expanded"]
                 s.card.setProperty("state", "warn" if exp else "ok")
                 s.dmbig.setText("%d %s" % (info["dmem_mb"], "МБ" if LANG != "en" else "MB"))
-                s.dmhex.setText("0x%x %s%s" % (info["dmem_mb"] * MB, tr("bytes"), "  " + tr("card_std") if not exp else ""))
-                s.dmtxt.setText("⚠ " + tr("card_exp", info["dmem_mb"], info["dmem_mb"] - DMEM_BASE_MB) if exp else "✔ " + tr("card_ok"))
+                s.dmhex.setText("0x%x %s%s" % (info["dmem_mb"] * MB,
+                                                tr("bytes"), "  " + tr("card_std") if not exp else ""))
+                s.dmtxt.setText("⚠ " + tr("card_exp", info["dmem_mb"], info["dmem_mb"] - DMEM_BASE_MB)
+                                if exp else "✔ " + tr("card_ok"))
             except BudgetError as e:
                 s.sum.setText("⚠ " + str(e)); s.go.setEnabled(False)
-                s.card.setProperty("state", "warn"); s.dmbig.setText("—"); s.dmhex.setText("")
+                s.card.setProperty("state", "err"); s.dmbig.setText("—"); s.dmhex.setText("")
                 s.dmtxt.setText(tr("card_bad"))
             s.repolish(s.card, s.dmbig, s.dmhex, s.dmtxt)
+            s.update_status()
 
-        def check(s):
+        def check_eboot(s):
             p = s.eboot.text()
             if not p: return
             try:
@@ -1417,78 +1761,136 @@ def gui():
             except Exception as e:
                 s.say(tr("eboot_fail", e))
 
+        def _next_steps_html(s, root, did_xml, did_spv, did_cache, gr, cres, manual):
+            """Формирует понятный список шагов 'Что делать дальше'."""
+            mb = "МБ" if LANG != "en" else "MB"
+            steps = []
+            if did_xml or manual:
+                if gr and gr.get("xml") is not None:
+                    rel = xml_gh_rel()
+                elif manual:
+                    rel = None
+                else:
+                    Wd, Hd = s.w.value(), s.h.value()
+                    rel = xml_rel(Wd, Hd)
+                if rel:
+                    if LANG == "en":
+                        steps.append("Copy folder «user» from «%s» into your shadPS4 folder (merge, overwrite)." % root)
+                    elif LANG == "uk":
+                        steps.append("Скопіюйте теку «user» з «%s» у теку shadPS4 (з об'єднанням і заміною)." % root)
+                    else:
+                        steps.append("Скопируйте папку «user» из «%s» в папку shadPS4 (с объединением и заменой)." % root)
+                elif manual:
+                    if LANG == "en":
+                        steps.append("Open TheLastOfUsRemastered.xml in shadPS4/user/patches/shadPS4 and paste the block from «%s» before </Patch>." % manual)
+                    elif LANG == "uk":
+                        steps.append("Відкрийте TheLastOfUsRemastered.xml у shadPS4/user/patches/shadPS4 та вставте блок з «%s» перед </Patch>." % manual)
+                    else:
+                        steps.append("Откройте TheLastOfUsRemastered.xml в shadPS4/user/patches/shadPS4 и вставьте блок из «%s» перед </Patch>." % manual)
+            if did_cache and cres and cres.get("changed", 0):
+                if LANG == "en": steps.append("Shader cache: patched in-place — no extra copy needed.")
+                elif LANG == "uk": steps.append("Кеш шейдерів: пропатчено на місці — копіювати нічого.")
+                else: steps.append("Кэш шейдеров: пропатчен на месте — дополнительного копирования не нужно.")
+            elif did_spv and not did_cache:
+                if LANG == "en": steps.append("Copy folder «user» from «%s» into your shadPS4 folder to apply the shader patch." % root)
+                elif LANG == "uk": steps.append("Скопіюйте теку «user» з «%s» у теку shadPS4 для застосування патчу шейдера." % root)
+                else: steps.append("Скопируйте папку «user» из «%s» в папку shadPS4 для применения патча шейдера." % root)
+            if LANG == "en": steps.append("In shadPS4: right-click the game → Edit Cheats → enable the patch «Resolution Patch %dx%d»." % (s.w.value(), s.h.value()))
+            elif LANG == "uk": steps.append("У shadPS4: ПКМ по грі → Edit Cheats → увімкніть патч «Resolution Patch %dx%d»." % (s.w.value(), s.h.value()))
+            else: steps.append("В shadPS4: ПКМ по игре → Edit Cheats → включите патч «Resolution Patch %dx%d»." % (s.w.value(), s.h.value()))
+            lines = "\n".join("  %d. %s" % (i+1, st) for i, st in enumerate(steps))
+            if LANG == "en": head = "Done! What to do next:\n\n"
+            elif LANG == "uk": head = "Готово! Що робити далі:\n\n"
+            else: head = "Готово! Что делать дальше:\n\n"
+            return head + lines
+
         def run(s):
-            Wd, Hd = s.w.value(), s.h.value(); R = (Wd / Hd) / (16 / 9)
+            Wd, Hd = s.w.value(), s.h.value()
             did = False; spv_done = False; cres = None; gr = None; manual = None
-            cache = s.cache.text()
-            root = out_root(s.xmlin.text(), s.eboot.text(), s.spvin.text())
-            use_gh = s.gh.isChecked() and not s.xmlin.text()
+            cache_path = s.cache.text().strip()
+            xmlin_path = s.xmlin.text().strip()
+            spvin_path = s.spvin.text().strip()
+            use_spv = s.spv_use.isChecked() and not is_169(Wd, Hd)
+            use_gh = s.gh.isChecked() and not xmlin_path
             disable_old = not (s.adv_on() and s.keep.isChecked())
+            root = out_root()
+
             try:
-                if use_gh:   # актуальный файл с GitHub + наш патч
+                # --- XML патч ---
+                if use_gh:
                     Q.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
                     try:
                         gr = build_github_xml(Wd, Hd, s.aggr_val(), s.frac_val(), s.extra_val(), disable_old, s.say)
                     finally:
                         Q.QApplication.restoreOverrideCursor()
-                    info = gr["info"]; s.say(gr["text"])
+                    s.say(gr["text"])
+                    info = gr["info"]
                     if gr["xml"] is not None:
                         out = os.path.join(root, xml_gh_rel())
                         os.makedirs(os.path.dirname(out), exist_ok=True)
                         with open(out, 'w', encoding='utf-8', newline='') as f: f.write(gr["xml"])
-                        s.say(tr("log_xml", out)); s.say(tr("put_gh", xml_gh_rel())); did = True
+                        s.say(tr("log_xml", out)); did = True
                     elif gr["status"] in ("offline", "conflict"):
                         manual = os.path.join(root, block_rel(Wd, Hd))
                         os.makedirs(root, exist_ok=True)
                         open(manual, 'w', encoding='utf-8').write(gr["block"])
                         s.say(tr("gh_man_log", manual))
                     if info["expanded"]: s.say("⚠ " + dmem_note(info))
-                else:        # свой базовый XML или файл с нуля
-                    if s.gh.isChecked() and s.xmlin.text(): s.say(tr("gh_skip"))
-                    base = open(s.xmlin.text(), encoding='utf-8').read() if s.xmlin.text() else None
+                else:
+                    if s.gh.isChecked() and xmlin_path: s.say(tr("gh_skip"))
+                    base = open(xmlin_path, encoding='utf-8').read() if xmlin_path else None
                     out = out_xml_path(root, Wd, Hd)
                     os.makedirs(os.path.dirname(out), exist_ok=True)
                     x, rows, info = build_xml(Wd, Hd, base, s.aggr_val(), s.frac_val(), s.extra_val(), disable_old)
                     open(out, 'w', encoding='utf-8').write(x)
-                    s.say(tr("log_xml", out)); s.say(tr("put_xml", xml_rel(Wd, Hd)))
+                    s.say(tr("log_xml", out))
                     if info["expanded"]: s.say("⚠ " + dmem_note(info))
                     did = True
-                if s.spvin.text() and is_169(Wd, Hd):
-                    s.say(tr("spv_skip169"))
-                elif s.spvin.text():
-                    res, msg = patch_spv(open(s.spvin.text(), 'rb').read(), R)
-                    out = out_spv_path(s.spvin.text(), root)
+
+                # --- Шейдер (ручной файл) ---
+                if use_spv and spvin_path:
+                    res, msg = patch_spv(open(spvin_path, 'rb').read(), (Wd / Hd) / (16 / 9))
+                    out = out_spv_path(spvin_path, root)
                     os.makedirs(os.path.dirname(out), exist_ok=True)
                     open(out, 'wb').write(res)
-                    s.say(tr("log_spv", msg, out)); s.say(tr("put_spv", os.path.join(SPV_REL, os.path.basename(out))))
-                    if not cache: s.say(tr("spv_cache"))
+                    s.say(tr("log_spv", msg, out))
+                    if not cache_path: s.say(tr("spv_cache"))
                     did = spv_done = True
-                if cache:   # обход бага кэша: патчим шейдер прямо в папке/ZIP кэша
+
+                # --- Шейдер через кэш ---
+                if use_spv and cache_path:
                     s.go.setEnabled(False); Q.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
                     try:
-                        cres = patch_cache(cache, Wd, Hd, os.path.join(root, "backup"), s.say)
+                        cres = patch_cache(cache_path, Wd, Hd, os.path.join(root, "backup"), s.say)
                     finally:
                         Q.QApplication.restoreOverrideCursor(); s.go.setEnabled(True)
                     s.say(cres["text"])
-                parts = []
-                if did or manual or (cres and cres["changed"]):
-                    parts.append(tr("done_msg") + "\n" + root + "\n\n" + tr("put_all"))
-                if gr: parts.append(gr["text"])
-                if cres: parts.append(cres["text"])
-                elif spv_done: parts.append(tr("spv_cache"))
-                if manual: parts.append(tr("gh_man_msg", manual))
+
+                # --- Итоговый диалог ---
                 nf = bool(cres and cres["status"] == "notfound")
-                if nf: parts.append(tr("cache_nf_msg"))
-                body = "\n\n".join(parts)
+                body = s._next_steps_html(root, did, spv_done, bool(cres), gr, cres, manual)
+
+                # Дополнительные предупреждения
+                extra_notes = []
+                if gr: extra_notes.append(gr["text"])
+                if cres: extra_notes.append(cres["text"])
+                elif spv_done and not cache_path: extra_notes.append(tr("spv_cache"))
+                if manual: extra_notes.append(tr("gh_man_msg", manual))
+                if nf: extra_notes.append(tr("cache_nf_msg"))
+                if extra_notes:
+                    body += "\n\n─────────────────────\n" + "\n\n".join(extra_notes)
+
                 if nf or manual:
                     Q.QMessageBox.warning(s, tr("warn_title"), body)
                 else:
                     Q.QMessageBox.information(s, tr("done_title"), body)
+
             except Exception as e:
-                s.say(tr("err_prefix", e)); Q.QMessageBox.critical(s, tr("err_title"), str(e))
+                s.say(tr("err_prefix", e))
+                Q.QMessageBox.critical(s, tr("err_title"), str(e))
 
     w = Win(); w.show()
-    shot = os.environ.get("TLOU_SHOT")        # отладка: сохранить скриншот окна и выйти
+    shot = os.environ.get("TLOU_SHOT")
     if os.environ.get("TLOU_ADV"): w.advchk.setChecked(True)
     if shot:
         QtCore.QTimer.singleShot(300, lambda: (w.grab().save(shot), app.quit()))
@@ -1499,9 +1901,13 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cli", nargs=2, type=int, metavar=("W", "H"))
     ap.add_argument("--eboot"); ap.add_argument("--xml", nargs=2, metavar=("IN", "OUT"))
-    ap.add_argument("--spv", nargs=2, metavar=("IN", "OUT")); ap.add_argument("--aggressive", action="store_true"); ap.add_argument("--extra", type=int, default=0, help="доп. direct-память сверх 4608 МБ (чётное число МБ)"); ap.add_argument("--dmem", action="store_true", help="режим с расширением dmem: CPU не урезается"); ap.add_argument("--keep-old", action="store_true", help="не отключать прежние разрешающие секции в базовом XML"); ap.add_argument("--frac", type=float, default=100.0, help="доля бюджета RT, зависящая от разрешения, %% (по умолчанию 100)")
-    ap.add_argument("--cache", metavar="DIR|ZIP", help="кэш шейдеров shadPS4 (папка или .zip): найти шейдер видео и пропатчить в нём")
-    ap.add_argument("--lang", choices=["en", "ru", "uk"], help="язык интерфейса и описаний патча (по умолчанию - язык системы, иначе en)")
+    ap.add_argument("--spv", nargs=2, metavar=("IN", "OUT")); ap.add_argument("--aggressive", action="store_true")
+    ap.add_argument("--extra", type=int, default=0)
+    ap.add_argument("--dmem", action="store_true")
+    ap.add_argument("--keep-old", action="store_true")
+    ap.add_argument("--frac", type=float, default=100.0)
+    ap.add_argument("--cache", metavar="DIR|ZIP")
+    ap.add_argument("--lang", choices=["en", "ru", "uk"])
     a = ap.parse_args()
     LANG = a.lang or detect_lang()
     sys.exit(cli(a)) if a.cli else gui()

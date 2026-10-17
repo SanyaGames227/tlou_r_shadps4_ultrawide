@@ -1,8 +1,8 @@
-# TLOU Remastered — Ultrawide Patch
+# TLOU Remastered — Ultrawide Patcher
 
 Ultrawide / custom resolution support for *The Last of Us Remastered* (PS4 `01.11`) on [shadPS4](https://github.com/shadps4-emu/shadPS4).
 
-<img width="2560" height="1080" src="https://github.com/user-attachments/assets/50b698af-f1f5-4993-87fc-134f06d02df2" />
+<img width="2560" height="1080" src="docs/screenshots/screenshot_1.jpeg" />
 
 The resolution patch is available directly in shadPS4 — **no extra steps needed** to get ultrawide working.
 
@@ -10,11 +10,14 @@ The only thing you need to do manually is **fix cutscenes** — by default they 
 
 > The shader is taken from **your own copy of the game** — this repository does not distribute it.
 
+## Main Window
+<img src="docs/screenshots/tlou_r_shadps4_ultrawide.png" />
+
 ---
 
 ## Fixing cutscenes
 
-<img width="2560" height="1080" src="https://github.com/user-attachments/assets/d5fbeb9a-a3f8-4744-8dee-ac885c4f1223" />
+<img width="2560" height="1080" src="docs/screenshots/screenshot_2.jpg" />
 
 ### Step 1 — Dump the shader from the game
 

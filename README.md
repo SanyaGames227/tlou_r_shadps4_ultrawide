@@ -8,19 +8,27 @@ The resolution patch is available directly in shadPS4 — **no extra steps neede
 
 The only thing you need to do manually is **fix cutscenes** — by default they render at 16:9 and will appear stretched. This tool patches the video shader to fix that.
 
+> The shader is taken from **your own copy of the game** — this repository does not distribute it.
+
 ---
 
 ## Fixing cutscenes
 
 <img width="2560" height="1080" src="https://github.com/user-attachments/assets/d5fbeb9a-a3f8-4744-8dee-ac885c4f1223" />
 
-### Step 1 — Get the shader file
+### Step 1 — Dump the shader from the game
 
-Download **[cs_0x00000000562c4394_0.spv](https://github.com/SanyaGames227/tlou_r_shadps4_ultrawide/blob/main/cs_0x00000000562c4394_0.spv)** from this repository — this is the clean original shader used as input for the patcher.
+1. In shadPS4 enable **Settings → GPU → Dump Shaders** ✓
+2. Launch the game, go to **Options → Credits** and let it play for a few seconds (the credits are a cutscene).
+3. Close the game. The dumped file is here:
+
+```
+<shadPS4 folder>/user/shader/dumps/cs_0x00000000562c4394_0.spv
+```
 
 ### Step 2 — Patch it
 
-Run the patcher, drop the `.spv` into the **Shader** field, set your resolution, click **Create patch**.
+Run the patcher, drop the dumped `.spv` into the **Shader** field, set your resolution, click **Create patch**.
 
 ### Step 3 — Install
 
@@ -49,13 +57,13 @@ Launch the game and cutscenes will display correctly.
 
 The patcher will report what it found and patched. The original shader is saved to the `ShadPS4/backup` folder next to the patcher before anything is changed. ZIP archives are rebuilt safely: the result is verified first, and your original archive stays untouched if anything goes wrong.
 
-You do not have to provide the `.spv` for this — the shader is taken from the cache itself. The `.spv` field is still needed if you also want the file for `user/shader/patch`.
+For this you do not need a dumped `.spv` — the shader is taken from the cache itself. The **Shader** field is only needed if you also want the file for `user/shader/patch`.
 
 ### "Video shader not found in the cache"
 
 The shader gets into the cache only after the game has played a cutscene. So:
 
-1. Launch the game and start any cutscene — for example **Options → Credits** (the credits are a cutscene too).
+1. Launch the game and start any cutscene — for example **Options → Credits**.
 2. **Close the game completely.**
 3. Run the patcher again with the same cache path.
 
@@ -63,30 +71,7 @@ The shader gets into the cache only after the game has played a cutscene. So:
 
 - Changed your resolution later? Just run the patcher again — an already patched shader in the cache is found and updated.
 - For 16:9 resolutions the shader is not needed; if a previously patched one is found in the cache, it is reset to a neutral state.
-- The patcher modifies the cache while the emulator is not running — if a file is locked, it will ask you to close the game and shadPS4.
-
----
-
-<details>
-<summary>The shader from this repo doesn't work or causes issues? Dump it yourself from the game.</summary>
-
-### Step 1 — Enable shader dumping in shadPS4
-
-In shadPS4: **Settings → GPU → Dump Shaders** ✓
-
-### Step 2 — Dump the shader
-
-Launch the game, go to **Options → Credits** and let it play for a few seconds.
-
-### Step 3 — Find the dumped file
-
-```
-<shadPS4 folder>/user/shader/dumps/cs_0x00000000562c4394_0.spv
-```
-
-Use this file as input in Step 2 above instead.
-
-</details>
+- If a file is locked, the patcher will ask you to close the game and shadPS4.
 
 ---
 

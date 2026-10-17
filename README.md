@@ -4,7 +4,6 @@ Ultrawide / custom resolution support for *The Last of Us Remastered* (PS4 `01.1
 
 <img width="2560" height="1080" src="https://github.com/user-attachments/assets/50b698af-f1f5-4993-87fc-134f06d02df2" />
 
-
 The resolution patch is available directly in shadPS4 — **no extra steps needed** to get ultrawide working.
 
 The only thing you need to do manually is **fix cutscenes** — by default they render at 16:9 and will appear stretched. This tool patches the video shader to fix that.
@@ -14,7 +13,6 @@ The only thing you need to do manually is **fix cutscenes** — by default they 
 ## Fixing cutscenes
 
 <img width="2560" height="1080" src="https://github.com/user-attachments/assets/d5fbeb9a-a3f8-4744-8dee-ac885c4f1223" />
-
 
 ### Step 1 — Get the shader file
 
@@ -31,11 +29,41 @@ Copy the output file to:
 <shadPS4 folder>/user/shader/patch/cs_0x00000000562c4394_0.spv
 ```
 
-⚠️ If shader cache is enabled in shadPS4 — delete the game's shader cache afterwards, otherwise the fix won't take effect.
+Launch the game and cutscenes will display correctly.
+
+> ⚠️ **Shader cache enabled in shadPS4?** Read the next section — the patched shader may be ignored on repeated launches.
 
 ---
 
-That's it. Launch the game and cutscenes will display correctly.
+## Shader cache workaround
+
+**The problem.** With *shader cache* enabled in shadPS4, the emulator uses the patched shader from `user/shader/patch` only on the **first** launch. From the second launch on, it takes the **stock** shader from the cache, and cutscenes are stretched again. This is a shadPS4 bug.
+
+**The workaround.** Until it is fixed in the emulator, the patcher can patch the shader **directly inside the shader cache** — either a folder or a ZIP archive (both are supported by shadPS4). It looks for the original video shader by file size and SHA-256 (so even a cache with thousands of files is scanned instantly) and replaces it in place.
+
+### How to use
+
+1. **Close the game and shadPS4.**
+2. In the patcher, set your resolution and fill in the **Shader cache** field — click **Folder…** or **ZIP…** and select your shader cache.
+3. Click **Create patch**.
+
+The patcher will report what it found and patched. The original shader is saved to the `ShadPS4/backup` folder next to the patcher before anything is changed. ZIP archives are rebuilt safely: the result is verified first, and your original archive stays untouched if anything goes wrong.
+
+You do not have to provide the `.spv` for this — the shader is taken from the cache itself. The `.spv` field is still needed if you also want the file for `user/shader/patch`.
+
+### "Video shader not found in the cache"
+
+The shader gets into the cache only after the game has played a cutscene. So:
+
+1. Launch the game and start any cutscene — for example **Options → Credits** (the credits are a cutscene too).
+2. **Close the game completely.**
+3. Run the patcher again with the same cache path.
+
+### Notes
+
+- Changed your resolution later? Just run the patcher again — an already patched shader in the cache is found and updated.
+- For 16:9 resolutions the shader is not needed; if a previously patched one is found in the cache, it is reset to a neutral state.
+- The patcher modifies the cache while the emulator is not running — if a file is locked, it will ask you to close the game and shadPS4.
 
 ---
 
@@ -69,27 +97,32 @@ The patcher also generates a full XML patch if you need a resolution not include
 **Requirements:** Python 3.8+, PyQt5 (`pip install PyQt5`)
 
 ```
-python tlou_ultrawide.py
+python tlou_r_shadps4_ultrawide.py
 ```
 
 The generated `<Metadata>` block goes into `TheLastOfUsRemastered.xml` in your shadPS4 patches folder, before the closing `</Patch>` tag.
 
 Tested: 2240×960, 2560×1080, 3440×1440
 
+The interface and patch descriptions are available in English, Russian and Ukrainian (detected from your system language, or set with `--lang`).
+
 <details>
 <summary>CLI usage</summary>
 
 ```
-python tlou_ultrawide.py --cli 2560 1080 \
+python tlou_r_shadps4_ultrawide.py --cli 2560 1080 \
     [--eboot eboot.bin] \
     [--xml base.xml out.xml] \
     [--spv in.spv out.spv] \
+    [--cache DIR|ZIP] \
     [--dmem | --extra MB] \
     [--aggressive] \
     [--frac %] \
     [--keep-old] \
     [--lang en|ru|uk]
 ```
+
+`--cache` patches the video shader inside the shadPS4 shader cache (folder or `.zip`). Exit code `3` means the shader was not found in the cache yet (play any cutscene first, see above).
 
 </details>
 

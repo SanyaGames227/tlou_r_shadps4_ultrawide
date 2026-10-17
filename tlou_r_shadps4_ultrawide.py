@@ -5,9 +5,10 @@ TLOU Remastered (PS4, AppVer 01.11) - генератор патча любого
 для shadPS4: XML-патч (eboot.bin) + замена SPIR-V шейдера видеороликов.
 
 GUI (PyQt5):   python3 tlou_ultrawide.py
-CLI:           python3 tlou_ultrawide.py --cli 2560 1080 [--eboot eboot.bin] [--xml base.xml out.xml]
+CLI:           python3 tlou_ultrawide.py --cli 2560 1080 [--eboot eboot.bin] [--xml base.xml|github out.xml]
                                          [--spv in.spv out.spv] [--aggressive]
                                          [--cache ПАПКА|ZIP] [--dmem | --extra МБ] [--frac %] [--keep-old] [--lang en|ru|uk]
+  --xml github OUT   взять актуальный TheLastOfUsRemastered.xml с GitHub (shadps4-emu/ps4_cheats) и дополнить его
   --cache     кэш шейдеров shadPS4 (папка или .zip): найти в нём шейдер видео (по размеру + SHA-256) и пропатчить на месте
   --dmem      режим «с расширением dmem»: CPU не урезается, константа direct-памяти растёт на D
   --extra МБ  частичное расширение (остальное забирается у CPU)
@@ -110,7 +111,7 @@ TR = {
   "g_narrow": "   ⚠ narrower than 16:9: HUD edges will be cropped",
   "g_files": "Files", "g_browse": "Browse…",
   "g_eboot": "eboot.bin:", "ph_eboot": "optional — checks that it is a clean 01.11",
-  "g_xmlin": "Base XML:", "ph_xmlin": "optional — the patch section will be added to it",
+  "g_xmlin": "Base XML:",
   "g_spv": "Shader (.spv):", "ph_spv": "cs_0x00000000562c4394_0.spv (original or already patched)",
   "g_outhint": "Results are saved into the «ShadPS4» folder next to the source files, with the same structure as in shadPS4 (user/patches/…, user/shader/patch/…). Copy it into your shadPS4 folder yourself.",
   "g_mem": "Memory budget",
@@ -129,6 +130,23 @@ TR = {
   "sum_cap": " | safely freed from CPU: %d MB", "g_log": "Log", "g_go": "Create patch",
   "done_title": "Done", "done_msg": "Files saved. See the log for details.", "err_title": "Error", "err_prefix": "Error: %s",
   "log_xml": "XML saved: %s", "log_spv": "Shader: %s\n  -> %s",
+  'g_gh': 'Add the patch to the latest file from GitHub (recommended)',
+  'g_ghhint': 'Downloads the current TheLastOfUsRemastered.xml from shadps4-emu/ps4_cheats and appends the patch to its end. An identical patch is not duplicated, an outdated one is replaced. If GitHub is unavailable, you get a block to paste into TheLastOfUsRemastered.xml manually.',
+  'gh_fetch': 'GitHub: downloading the latest TheLastOfUsRemastered.xml…',
+  'gh_ok': '   downloaded: %d bytes, patches in the file: %d',
+  'gh_added': '✔ Patch «%s» added to the end of the file.',
+  'gh_updated': '✔ Patch «%s» already existed in an older form (%d lines, now %d) — replaced entirely.',
+  'gh_off': '   earlier resolution patches switched off: %d',
+  'gh_same': 'Patch «%s» is already in the GitHub file and is identical — nothing to add.',
+  'gh_conflict': 'The GitHub file already has a patch «%s» with a different set of lines (%d there, %d in the patcher). It was left untouched so that nothing is overwritten by mistake.',
+  'gh_fail': 'Could not download the file from GitHub: %s',
+  'gh_bad': 'unexpected file contents',
+  'gh_skip': 'GitHub is not used: a base XML file is specified.',
+  'put_gh': '   -> replace this file in your shadPS4 folder: %s',
+  'gh_man_log': 'A block for manual insertion is saved: %s',
+  'gh_man_msg': 'The patch block is saved here:\n%s\n\nOpen TheLastOfUsRemastered.xml (<shadPS4>/user/patches/shadPS4) in a text editor and paste the block right before the closing </Patch> tag.',
+  'warn_title': 'Done, with a note',
+  'ph_xmlin': 'optional — your own base file (used instead of GitHub)',
   'g_cache': 'Shader cache (workaround)',
   'g_cachep': 'Cache:',
   'g_dir': 'Folder…',
@@ -203,7 +221,7 @@ TR = {
   "g_narrow": "   ⚠ уже, чем 16:9: HUD по краям будет обрезаться",
   "g_files": "Файлы", "g_browse": "Обзор…",
   "g_eboot": "eboot.bin:", "ph_eboot": "необязательно — проверка, что это чистый 01.11",
-  "g_xmlin": "Базовый XML:", "ph_xmlin": "необязательно — секция добавится к нему",
+  "g_xmlin": "Базовый XML:",
   "g_spv": "Шейдер (.spv):", "ph_spv": "cs_0x00000000562c4394_0.spv (оригинал или уже пропатченный)",
   "g_outhint": "Результаты сохраняются в папку «ShadPS4» рядом с исходными файлами, со структурой как в shadPS4 (user/patches/…, user/shader/patch/…). Перенесите её в папку shadPS4 самостоятельно.",
   "g_mem": "Бюджет памяти",
@@ -222,6 +240,23 @@ TR = {
   "sum_cap": " | безопасно высвобождаемо у CPU: %d МБ", "g_log": "Журнал", "g_go": "Создать патч",
   "done_title": "Готово", "done_msg": "Файлы сохранены. Подробности — в журнале.", "err_title": "Ошибка", "err_prefix": "Ошибка: %s",
   "log_xml": "XML сохранён: %s", "log_spv": "Шейдер: %s\n  -> %s",
+  'g_gh': 'Дополнить патчем актуальный файл с GitHub (рекомендуется)',
+  'g_ghhint': 'Скачивает текущий TheLastOfUsRemastered.xml из shadps4-emu/ps4_cheats и добавляет патч в его конец. Такой же патч не дублируется, устаревший заменяется. Если GitHub недоступен, вы получите блок для ручной вставки в TheLastOfUsRemastered.xml.',
+  'gh_fetch': 'GitHub: скачиваю актуальный TheLastOfUsRemastered.xml…',
+  'gh_ok': '   скачано: %d байт, патчей в файле: %d',
+  'gh_added': '✔ Патч «%s» добавлен в конец файла.',
+  'gh_updated': '✔ Патч «%s» уже был, но в устаревшем виде (строк: %d, теперь %d) — заменён целиком.',
+  'gh_off': '   прежних патчей разрешения отключено: %d',
+  'gh_same': 'Патч «%s» уже есть в файле на GitHub и полностью совпадает — добавлять нечего.',
+  'gh_conflict': 'В файле на GitHub уже есть патч «%s» с другим набором строк (там %d, в патчере %d). Файл оставлен без изменений, чтобы ничего не перезаписать по ошибке.',
+  'gh_fail': 'Не удалось скачать файл с GitHub: %s',
+  'gh_bad': 'неожиданное содержимое файла',
+  'gh_skip': 'GitHub не используется: указан свой базовый XML.',
+  'put_gh': '   -> замените этот файл в папке shadPS4: %s',
+  'gh_man_log': 'Блок для ручной вставки сохранён: %s',
+  'gh_man_msg': 'Блок патча сохранён здесь:\n%s\n\nОткройте TheLastOfUsRemastered.xml (<папка shadPS4>/user/patches/shadPS4) в текстовом редакторе и вставьте блок прямо перед закрывающим тегом </Patch>.',
+  'warn_title': 'Готово, но есть нюанс',
+  'ph_xmlin': 'необязательно — свой базовый файл (используется вместо GitHub)',
   'g_cache': 'Кэш шейдеров (временное решение)',
   'g_cachep': 'Кэш:',
   'g_dir': 'Папка…',
@@ -296,7 +331,7 @@ TR = {
   "g_narrow": "   ⚠ вужче за 16:9: HUD по краях буде обрізатись",
   "g_files": "Файли", "g_browse": "Огляд…",
   "g_eboot": "eboot.bin:", "ph_eboot": "необов'язково — перевірка, що це чистий 01.11",
-  "g_xmlin": "Базовий XML:", "ph_xmlin": "необов'язково — секція додасться до нього",
+  "g_xmlin": "Базовий XML:",
   "g_spv": "Шейдер (.spv):", "ph_spv": "cs_0x00000000562c4394_0.spv (оригінал або вже пропатчений)",
   "g_outhint": "Результати зберігаються в папку «ShadPS4» поруч з вихідними файлами, зі структурою як у shadPS4 (user/patches/…, user/shader/patch/…). Перенесіть її в папку shadPS4 самостійно.",
   "g_mem": "Бюджет пам'яті",
@@ -315,6 +350,23 @@ TR = {
   "sum_cap": " | безпечно вивільнити у CPU: %d МБ", "g_log": "Журнал", "g_go": "Створити патч",
   "done_title": "Готово", "done_msg": "Файли збережено. Подробиці — в журналі.", "err_title": "Помилка", "err_prefix": "Помилка: %s",
   "log_xml": "XML збережено: %s", "log_spv": "Шейдер: %s\n  -> %s",
+  'g_gh': 'Доповнити патчем актуальний файл з GitHub (рекомендовано)',
+  'g_ghhint': 'Завантажує поточний TheLastOfUsRemastered.xml із shadps4-emu/ps4_cheats і додає патч наприкінці. Такий самий патч не дублюється, застарілий замінюється. Якщо GitHub недоступний, ви отримаєте блок для ручної вставки в TheLastOfUsRemastered.xml.',
+  'gh_fetch': 'GitHub: завантажуємо актуальний TheLastOfUsRemastered.xml…',
+  'gh_ok': '   завантажено: %d байт, патчів у файлі: %d',
+  'gh_added': '✔ Патч «%s» додано наприкінці файлу.',
+  'gh_updated': '✔ Патч «%s» уже був, але в застарілому вигляді (рядків: %d, тепер %d) — замінено повністю.',
+  'gh_off': '   попередніх патчів роздільної здатності вимкнено: %d',
+  'gh_same': 'Патч «%s» уже є у файлі на GitHub і повністю збігається — додавати нічого.',
+  'gh_conflict': 'У файлі на GitHub уже є патч «%s» з іншим набором рядків (там %d, у патчері %d). Файл залишено без змін, щоб нічого не перезаписати помилково.',
+  'gh_fail': 'Не вдалося завантажити файл з GitHub: %s',
+  'gh_bad': 'неочікуваний вміст файлу',
+  'gh_skip': 'GitHub не використовується: вказано власний базовий XML.',
+  'put_gh': '   -> замініть цей файл у теці shadPS4: %s',
+  'gh_man_log': 'Блок для ручної вставки збережено: %s',
+  'gh_man_msg': 'Блок патча збережено тут:\n%s\n\nВідкрийте TheLastOfUsRemastered.xml (<тека shadPS4>/user/patches/shadPS4) у текстовому редакторі та вставте блок одразу перед закривним тегом </Patch>.',
+  'warn_title': 'Готово, але є нюанс',
+  'ph_xmlin': "необов'язково — власний базовий файл (використовується замість GitHub)",
   'g_cache': 'Кеш шейдерів (тимчасове рішення)',
   'g_cachep': 'Кеш:',
   'g_dir': 'Тека…',
@@ -556,6 +608,24 @@ def lines_to_text(L):
     return "\n".join(out)
 
 
+RATIOS = [("4:3", 4 / 3), ("5:4", 5 / 4), ("3:2", 3 / 2), ("16:10", 16 / 10), ("16:9", 16 / 9),
+          ("21:9", 21 / 9), ("32:9", 32 / 9)]
+
+
+def ratio_label(W, H):
+    """Маркетинговое название соотношения сторон: 2560x1080 -> 21:9, 3440x1440 -> 21:9, 3840x1080 -> 32:9."""
+    ar = W / H
+    name, val = min(RATIOS, key=lambda r: abs(ar / r[1] - 1))
+    if abs(ar / val - 1) <= 0.035:
+        return name
+    g = math.gcd(W, H); a, b = W // g, H // g
+    return "%d:%d" % (a, b) if max(a, b) <= 50 else "%.2f:1" % ar
+
+
+def patch_name(W, H):
+    return "Resolution Patch %dx%d (%s)" % (W, H, ratio_label(W, H))
+
+
 def make_metadata(W, H, aggressive, frac=1.0, extra=0):
     L, rows, info = build_lines(W, H, aggressive, frac, extra)
     R = (W / H) / (16 / 9)
@@ -569,7 +639,7 @@ def make_metadata(W, H, aggressive, frac=1.0, extra=0):
     note = note.replace('&', '&amp;').replace('"', '&quot;').replace('<', '&lt;')
     return ('    <Metadata Title="The Last of Us Remastered" Name="%s" Note="%s" Author="%s" '
             'PatchVer="1.0" AppVer="01.11" AppElf="eboot.bin" isEnabled="true">\n    <PatchList>\n%s\n'
-            '    </PatchList>\n    </Metadata>\n' % ("Ultrawide %dx%d" % (W, H), note, AUTHOR, lines_to_text(L))), rows, info
+            '    </PatchList>\n    </Metadata>\n' % (patch_name(W, H), note, AUTHOR, lines_to_text(L))), rows, info
 
 
 def build_xml(W, H, base_text=None, aggressive=False, frac=1.0, extra=0, disable_old=True):
@@ -592,6 +662,115 @@ def build_xml(W, H, base_text=None, aggressive=False, frac=1.0, extra=0, disable
         ids = "\n".join("        <ID>%s</ID>" % t for t in TITLE_IDS)
         x = '<?xml version="1.0"?>\n<Patch>\n    <TitleID>\n%s\n    </TitleID>\n%s</Patch>\n' % (ids, meta)
     return x, rows, info
+
+
+# ----------------------------------------------------------------------------------------
+# Актуальный TheLastOfUsRemastered.xml с GitHub: дополняем его своим патчем вместо генерации с нуля
+# ----------------------------------------------------------------------------------------
+GH_RAW_URL = "https://github.com/shadps4-emu/ps4_cheats/raw/refs/heads/main/PATCHES/TheLastOfUsRemastered.xml"
+GH_FILE = "TheLastOfUsRemastered.xml"
+BLOCK_RE = re.compile(r'<Metadata\b[^>]*>.*?</Metadata>', re.S)
+ADDR_RES = 0x156bfbc                 # адрес ширины экрана: по нему узнаём «разрешающие» патчи
+
+
+class GhError(Exception):
+    pass
+
+
+def fetch_github_xml(timeout=15):
+    import urllib.request
+    req = urllib.request.Request(GH_RAW_URL, headers={"User-Agent": "tlou-ultrawide-patcher"})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            data = r.read(8 * MB)
+        text = data.decode("utf-8-sig")
+    except Exception as e:
+        raise GhError(str(getattr(e, "reason", None) or e))
+    if "</Patch>" not in text or not any(t in text for t in TITLE_IDS):
+        raise GhError(tr("gh_bad"))
+    return text
+
+
+def _attrs(tag):
+    return dict(re.findall(r'([\w:]+)\s*=\s*"([^"]*)"', tag))
+
+
+def _open_tag(block):
+    return re.match(r'<Metadata\b[^>]*>', block).group(0)
+
+
+def _pairs(block):
+    """Множество (адрес, значение) всех <Line> блока - по нему сравниваем патчи."""
+    out = set()
+    for t in re.findall(r'<Line\b[^>]*>', block):
+        a = _attrs(t)
+        try:
+            out.add((int(a["Address"], 16), a["Value"].lower()))
+        except (KeyError, ValueError):
+            pass
+    return out
+
+
+def merge_patch(base, block, W, H, disable_old=True):
+    """Добавляет/обновляет наш патч в тексте XML. Возвращает (текст|None, действие, подробности).
+    Действия: added - дописан в конец; updated - в файле был неполный/старый, заменён целиком;
+    same - уже есть и совпадает; conflict - в файле другой набор строк, не трогаем."""
+    nl = "\r\n" if "\r\n" in base else "\n"
+    name, legacy = patch_name(W, H), "Ultrawide %dx%d" % (W, H)
+    new_pairs = _pairs(block)
+
+    def is_ours(blk):
+        at = _attrs(_open_tag(blk))
+        return at.get("AppVer") == "01.11" and (at.get("Name") == name or
+                                                (at.get("Name") == legacy and at.get("Author") == AUTHOR))
+    cur = next((m for m in BLOCK_RE.finditer(base) if is_ours(m.group(0))), None)
+    d = dict(old=0, new=len(new_pairs), disabled=0)
+    if cur:
+        old_pairs = _pairs(cur.group(0)); d["old"] = len(old_pairs)
+        renamed = _attrs(_open_tag(cur.group(0))).get("Name") != name
+        if old_pairs == new_pairs and not renamed:
+            return None, "same", d
+        if not (old_pairs < new_pairs or (old_pairs == new_pairs and renamed)):
+            return None, "conflict", d           # на GitHub есть строки, которых нет у нас, - не затираем
+    cnt = [0]
+
+    def off(m):                                 # выключаем другие «разрешающие» патчи: они пишут в те же адреса
+        blk = m.group(0); at = _attrs(_open_tag(blk))
+        if is_ours(blk) or at.get("AppVer") != "01.11" or at.get("isEnabled", "").lower() != "true": return blk
+        if not any(a == ADDR_RES for a, _ in _pairs(blk)): return blk
+        cnt[0] += 1
+        return re.sub(r'isEnabled="true"', 'isEnabled="false"', blk, count=1, flags=re.I)
+    text = BLOCK_RE.sub(off, base) if disable_old else base
+    d["disabled"] = cnt[0]
+    body = block.strip("\r\n").replace("\n", nl)
+    cur = next((m for m in BLOCK_RE.finditer(text) if is_ours(m.group(0))), None)
+    if cur:                                      # заменяем на месте (отступ перед блоком остаётся прежним)
+        return text[:cur.start()] + body.lstrip() + text[cur.end():], "updated", d
+    i = text.rfind("</Patch>")
+    pre = "" if i == 0 or text[i - 1] in "\r\n" else nl
+    return text[:i] + pre + body + nl + text[i:], "added", d
+
+
+def build_github_xml(W, H, aggressive=False, frac=1.0, extra=0, disable_old=True, log=print, fetch=None):
+    """Скачивает файл с GitHub и вносит патч. Возвращает dict(status, xml, block, rows, info, text).
+    status: added | updated | same | conflict | offline. xml - готовый файл (только added/updated)."""
+    block, rows, info = make_metadata(W, H, aggressive, frac, extra)
+    res = dict(status="offline", xml=None, block=block, rows=rows, info=info, text="")
+    name = patch_name(W, H)
+    log(tr("gh_fetch"))
+    try:
+        base = (fetch or fetch_github_xml)()
+    except GhError as e:
+        res["text"] = tr("gh_fail", e); return res
+    log(tr("gh_ok", len(base.encode("utf-8")), len(BLOCK_RE.findall(base))))
+    text, act, d = merge_patch(base, block, W, H, disable_old)
+    res["status"], res["xml"] = act, text
+    if d["disabled"]: log(tr("gh_off", d["disabled"]))
+    res["text"] = {"added": lambda: tr("gh_added", name),
+                   "updated": lambda: tr("gh_updated", name, d["old"], d["new"]),
+                   "same": lambda: tr("gh_same", name),
+                   "conflict": lambda: tr("gh_conflict", name, d["old"], d["new"])}[act]()
+    return res
 
 
 # ----------------------------------------------------------------------------------------
@@ -916,7 +1095,19 @@ def cli(a):
     if a.eboot:
         bad = check_eboot(a.eboot)
         print(tr("eboot_ok") if not bad else tr("eboot_bad", ", ".join(bad)))
-    if a.xml:
+    if a.xml and a.xml[0].lower() == "github":
+        gr = build_github_xml(W, H, a.aggressive, a.frac / 100, resolve_extra('full' if a.dmem else 'custom', a.extra),
+                              not a.keep_old, print)
+        print(gr["text"])
+        if gr["xml"] is not None:
+            with open(a.xml[1], 'w', encoding='utf-8', newline='') as f: f.write(gr["xml"])
+            print("XML:", a.xml[1])
+        elif gr["status"] in ("offline", "conflict"):
+            bp = a.xml[1] + ".block.txt"
+            open(bp, 'w', encoding='utf-8').write(gr["block"])
+            print(tr("gh_man_log", bp)); print(tr("gh_man_msg", bp))
+        print("dmem:", dmem_note(gr["info"]))
+    elif a.xml:
         base = open(a.xml[0], encoding='utf-8').read() if os.path.exists(a.xml[0]) else None
         x, rows, info = build_xml(W, H, base, a.aggressive, a.frac / 100, resolve_extra('full' if a.dmem else 'custom', a.extra),
                                   not a.keep_old)
@@ -951,6 +1142,12 @@ XML_DIR = os.path.join("user", "patches", "shadPS4")
 def xml_rel(W, H):
     return os.path.join(XML_DIR, "TheLastofUsRemastered_%dx%d.xml" % (W, H))
 SPV_REL = os.path.join("user", "shader", "patch")
+
+
+def xml_gh_rel(): return os.path.join(XML_DIR, GH_FILE)
+
+
+def block_rel(W, H): return "ManualInsert_%dx%d.txt" % (W, H)      # вне user/, чтобы не попасть в папку патчей эмулятора
 
 
 def out_root(*srcs):
@@ -1088,6 +1285,9 @@ def gui():
             s.xmlin = FileRow(tr("g_xmlin"), "XML (*.xml)", tr("ph_xmlin"))
             s.spvin = FileRow(tr("g_spv"), "SPIR-V (*.spv)", tr("ph_spv"))
             for r in (s.eboot, s.xmlin, s.spvin): gl.addWidget(r)
+            s.gh = Q.QCheckBox(tr("g_gh")); s.gh.setChecked(True); gl.addWidget(s.gh)
+            gh_hint = Q.QLabel(tr("g_ghhint")); gh_hint.setObjectName("subtitle"); gh_hint.setWordWrap(True); gl.addWidget(gh_hint)
+            s.xmlin.edit.textChanged.connect(lambda t: s.gh.setEnabled(not t.strip()))   # свой базовый XML заменяет GitHub
             hint = Q.QLabel(tr("g_outhint")); hint.setObjectName("subtitle"); hint.setWordWrap(True); gl.addWidget(hint)
             left.addWidget(g)
 
@@ -1219,16 +1419,36 @@ def gui():
 
         def run(s):
             Wd, Hd = s.w.value(), s.h.value(); R = (Wd / Hd) / (16 / 9)
-            did = False; spv_done = False; cres = None
+            did = False; spv_done = False; cres = None; gr = None; manual = None
             cache = s.cache.text()
             root = out_root(s.xmlin.text(), s.eboot.text(), s.spvin.text())
+            use_gh = s.gh.isChecked() and not s.xmlin.text()
+            disable_old = not (s.adv_on() and s.keep.isChecked())
             try:
-                if True:   # XML создаётся всегда (поля «Сохранить …» убраны)
+                if use_gh:   # актуальный файл с GitHub + наш патч
+                    Q.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+                    try:
+                        gr = build_github_xml(Wd, Hd, s.aggr_val(), s.frac_val(), s.extra_val(), disable_old, s.say)
+                    finally:
+                        Q.QApplication.restoreOverrideCursor()
+                    info = gr["info"]; s.say(gr["text"])
+                    if gr["xml"] is not None:
+                        out = os.path.join(root, xml_gh_rel())
+                        os.makedirs(os.path.dirname(out), exist_ok=True)
+                        with open(out, 'w', encoding='utf-8', newline='') as f: f.write(gr["xml"])
+                        s.say(tr("log_xml", out)); s.say(tr("put_gh", xml_gh_rel())); did = True
+                    elif gr["status"] in ("offline", "conflict"):
+                        manual = os.path.join(root, block_rel(Wd, Hd))
+                        os.makedirs(root, exist_ok=True)
+                        open(manual, 'w', encoding='utf-8').write(gr["block"])
+                        s.say(tr("gh_man_log", manual))
+                    if info["expanded"]: s.say("⚠ " + dmem_note(info))
+                else:        # свой базовый XML или файл с нуля
+                    if s.gh.isChecked() and s.xmlin.text(): s.say(tr("gh_skip"))
                     base = open(s.xmlin.text(), encoding='utf-8').read() if s.xmlin.text() else None
                     out = out_xml_path(root, Wd, Hd)
                     os.makedirs(os.path.dirname(out), exist_ok=True)
-                    x, rows, info = build_xml(Wd, Hd, base, s.aggr_val(), s.frac_val(), s.extra_val(),
-                                              not (s.adv_on() and s.keep.isChecked()))
+                    x, rows, info = build_xml(Wd, Hd, base, s.aggr_val(), s.frac_val(), s.extra_val(), disable_old)
                     open(out, 'w', encoding='utf-8').write(x)
                     s.say(tr("log_xml", out)); s.say(tr("put_xml", xml_rel(Wd, Hd)))
                     if info["expanded"]: s.say("⚠ " + dmem_note(info))
@@ -1250,12 +1470,20 @@ def gui():
                     finally:
                         Q.QApplication.restoreOverrideCursor(); s.go.setEnabled(True)
                     s.say(cres["text"])
-                done = tr("done_msg") + "\n" + root + "\n\n" + tr("put_all")
-                if cres and cres["status"] == "notfound":
-                    Q.QMessageBox.warning(s, tr("cache_nf_title"), done + "\n\n" + tr("cache_nf_msg"))
-                elif did or cres:
-                    extra = ("\n\n" + cres["text"]) if cres else ("\n\n" + tr("spv_cache") if spv_done else "")
-                    Q.QMessageBox.information(s, tr("done_title"), done + extra)
+                parts = []
+                if did or manual or (cres and cres["changed"]):
+                    parts.append(tr("done_msg") + "\n" + root + "\n\n" + tr("put_all"))
+                if gr: parts.append(gr["text"])
+                if cres: parts.append(cres["text"])
+                elif spv_done: parts.append(tr("spv_cache"))
+                if manual: parts.append(tr("gh_man_msg", manual))
+                nf = bool(cres and cres["status"] == "notfound")
+                if nf: parts.append(tr("cache_nf_msg"))
+                body = "\n\n".join(parts)
+                if nf or manual:
+                    Q.QMessageBox.warning(s, tr("warn_title"), body)
+                else:
+                    Q.QMessageBox.information(s, tr("done_title"), body)
             except Exception as e:
                 s.say(tr("err_prefix", e)); Q.QMessageBox.critical(s, tr("err_title"), str(e))
 

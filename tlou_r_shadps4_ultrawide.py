@@ -7,12 +7,13 @@ TLOU Remastered (PS4, AppVer 01.11) - генератор патча любого
 GUI (PyQt5):   python3 tlou_ultrawide.py
 CLI:           python3 tlou_ultrawide.py --cli 2560 1080 [--eboot eboot.bin] [--xml base.xml out.xml]
                                          [--spv in.spv out.spv] [--aggressive]
-                                         [--dmem | --extra МБ] [--frac %] [--keep-old] [--lang en|ru|uk]
+                                         [--cache ПАПКА|ZIP] [--dmem | --extra МБ] [--frac %] [--keep-old] [--lang en|ru|uk]
+  --cache     кэш шейдеров shadPS4 (папка или .zip): найти в нём шейдер видео (по размеру + SHA-256) и пропатчить на месте
   --dmem      режим «с расширением dmem»: CPU не урезается, константа direct-памяти растёт на D
   --extra МБ  частичное расширение (остальное забирается у CPU)
   --keep-old  не отключать прежние разрешающие секции в базовом XML
 """
-import sys, os, re, struct, math, argparse
+import sys, os, re, struct, math, argparse, hashlib, shutil, zipfile, copy, time
 
 MB = 1 << 20
 AUTHOR = "sanyagames227"
@@ -75,7 +76,7 @@ TR = {
   "c_169": "16:9: aspect, camera, HUD and video shader patches are not needed (only resolution and memory)",
   "spv_skip169": "Shader skipped: not needed for 16:9",
   "g_169": "   ✔ 16:9: only resolution and memory are patched (HUD, camera and shader stay untouched)",
-  "spv_cache": "⚠ If the shader cache is enabled in shadPS4, delete the old shader cache of the game after installing the patched shader - otherwise the emulator keeps using the old compiled shader and the video will not change.",
+  "spv_cache": '⚠ Heads-up: with the shader cache enabled, shadPS4 may keep using the stock shader from the cache instead of user/shader/patch. Specify the cache folder or ZIP in the «Shader cache» field (--cache in CLI) and the patcher will patch the shader right there.',
   "put_xml": "   -> copy into your shadPS4 folder: %s",
   "put_spv": "   -> copy into your shadPS4 folder: %s",
   "put_all": "Copy the «user» folder from the ShadPS4 folder into your shadPS4 folder (merge, replace files).",
@@ -128,6 +129,29 @@ TR = {
   "sum_cap": " | safely freed from CPU: %d MB", "g_log": "Log", "g_go": "Create patch",
   "done_title": "Done", "done_msg": "Files saved. See the log for details.", "err_title": "Error", "err_prefix": "Error: %s",
   "log_xml": "XML saved: %s", "log_spv": "Shader: %s\n  -> %s",
+  'g_cache': 'Shader cache (workaround)',
+  'g_cachep': 'Cache:',
+  'g_dir': 'Folder…',
+  'g_zip': 'ZIP…',
+  'ph_cache': 'optional — folder or .zip with the shadPS4 shader cache',
+  'g_cachehint': 'Workaround for a shadPS4 bug: with the shader cache enabled, from the second launch the emulator ignores user/shader/patch and takes the stock shader from the cache. The patcher finds the video shader in the cache (by size and SHA-256) and patches it in place. Close the game and shadPS4 beforehand. The original shader is saved to the «backup» folder.',
+  'cache_scan': 'Shader cache: scanning %s',
+  'cache_stat': '   files checked: %d · same size: %d · confirmed by SHA-256: %d',
+  'cache_hit_orig': '   found the stock video shader: %s',
+  'cache_hit_patched': '   found an already patched video shader: %s',
+  'cache_backup': '   backup of the original: %s',
+  'cache_zip': '   rewriting the archive, this may take a moment…',
+  'cache_done': '✔ Shader cache: patched %d file(s) for %dx%d.',
+  'cache_reset': '✔ Shader cache: the previously patched shader was reset to neutral (16:9), files: %d.',
+  'cache_same': 'Shader cache: the shader is already patched for %dx%d — nothing to change.',
+  'cache_skip169': 'Shader cache left untouched: the video shader is not needed for 16:9.',
+  'cache_nf_log': '⚠ Shader cache: the video shader was not found (see the hint).',
+  'cache_nf_title': 'Video shader not found in the cache',
+  'cache_nf_msg': 'The cutscene video shader is not in the shader cache yet.\n\nIt appears there only after the game has played a cutscene. To fix this:\n1. Launch the game and start any cutscene — for example Options → Credits (the credits are a cutscene too).\n2. Close the game completely.\n3. Run the patcher again with the same cache path.',
+  'cache_err_path': 'Shader cache path not found: %s',
+  'cache_err_type': 'The specified file is not a ZIP archive: %s',
+  'cache_err_write': 'Could not write to the shader cache: %s\nClose the game and shadPS4, then try again.',
+  'cache_err_verify': 'Verification after writing failed — the original archive was left unchanged.',
  },
  "ru": {
   "no_change": "Площадь не больше 1920x1080 - бюджеты памяти менять не нужно.",
@@ -145,7 +169,7 @@ TR = {
   "c_169": "16:9: правки аспекта, камеры, HUD и шейдера видео не нужны (только разрешение и память)",
   "spv_skip169": "Шейдер пропущен: для 16:9 не нужен",
   "g_169": "   ✔ 16:9: патчится только разрешение и память (HUD, камера и шейдер не трогаются)",
-  "spv_cache": "⚠ Если в shadPS4 включён кэш шейдеров, после установки пропатченного шейдера удалите старый кэш шейдеров игры - иначе эмулятор продолжит использовать старый скомпилированный шейдер, и видео не изменится.",
+  "spv_cache": '⚠ Важно: при включённом кэше шейдеров shadPS4 может продолжать брать стоковый шейдер из кэша, а не из user/shader/patch. Укажите папку или ZIP кэша в поле «Кэш шейдеров» (в CLI — --cache), и патчер пропатчит шейдер прямо там.',
   "put_xml": "   -> перенесите в папку shadPS4: %s",
   "put_spv": "   -> перенесите в папку shadPS4: %s",
   "put_all": "Скопируйте папку «user» из созданной папки ShadPS4 в вашу папку shadPS4 (с объединением и заменой файлов).",
@@ -198,6 +222,29 @@ TR = {
   "sum_cap": " | безопасно высвобождаемо у CPU: %d МБ", "g_log": "Журнал", "g_go": "Создать патч",
   "done_title": "Готово", "done_msg": "Файлы сохранены. Подробности — в журнале.", "err_title": "Ошибка", "err_prefix": "Ошибка: %s",
   "log_xml": "XML сохранён: %s", "log_spv": "Шейдер: %s\n  -> %s",
+  'g_cache': 'Кэш шейдеров (временное решение)',
+  'g_cachep': 'Кэш:',
+  'g_dir': 'Папка…',
+  'g_zip': 'ZIP…',
+  'ph_cache': 'необязательно — папка или .zip с кэшем шейдеров shadPS4',
+  'g_cachehint': 'Обход бага shadPS4: при включённом кэше шейдеров со второго запуска эмулятор игнорирует user/shader/patch и берёт стоковый шейдер из кэша. Патчер находит шейдер видео в кэше (по размеру и SHA-256) и патчит его на месте. Перед этим закройте игру и shadPS4. Оригинал шейдера сохраняется в папку «backup».',
+  'cache_scan': 'Кэш шейдеров: сканирую %s',
+  'cache_stat': '   проверено файлов: %d · совпал размер: %d · подтверждено SHA-256: %d',
+  'cache_hit_orig': '   найден стоковый шейдер видео: %s',
+  'cache_hit_patched': '   найден уже пропатченный шейдер видео: %s',
+  'cache_backup': '   копия оригинала: %s',
+  'cache_zip': '   пересобираю архив, это может занять некоторое время…',
+  'cache_done': '✔ Кэш шейдеров: пропатчено файлов — %d (%dx%d).',
+  'cache_reset': '✔ Кэш шейдеров: ранее пропатченный шейдер приведён к нейтральному виду (16:9), файлов: %d.',
+  'cache_same': 'Кэш шейдеров: шейдер уже пропатчен под %dx%d — менять нечего.',
+  'cache_skip169': 'Кэш шейдеров не тронут: для 16:9 шейдер видео не нужен.',
+  'cache_nf_log': '⚠ Кэш шейдеров: шейдер видео не найден (см. подсказку).',
+  'cache_nf_title': 'Шейдер видео не найден в кэше',
+  'cache_nf_msg': 'Шейдер видеороликов пока отсутствует в кэше шейдеров.\n\nОн появляется там только после того, как в игре проиграна катсцена. Что нужно сделать:\n1. Запустите игру и включите любую катсцену — например, Options → Credits (титры тоже являются катсценой).\n2. Полностью закройте игру.\n3. Запустите патчер ещё раз с тем же путём к кэшу.',
+  'cache_err_path': 'Путь к кэшу шейдеров не найден: %s',
+  'cache_err_type': 'Указанный файл не является ZIP-архивом: %s',
+  'cache_err_write': 'Не удалось записать в кэш шейдеров: %s\nЗакройте игру и shadPS4 и повторите попытку.',
+  'cache_err_verify': 'Проверка после записи не пройдена — исходный архив оставлен без изменений.',
  },
  "uk": {
   "no_change": "Площа не більша за 1920x1080 - бюджети пам'яті змінювати не потрібно.",
@@ -215,7 +262,7 @@ TR = {
   "c_169": "16:9: правки співвідношення, камери, HUD та шейдера відео не потрібні (лише роздільна здатність і пам'ять)",
   "spv_skip169": "Шейдер пропущено: для 16:9 не потрібен",
   "g_169": "   ✔ 16:9: патчиться лише роздільна здатність і пам'ять (HUD, камера та шейдер не чіпаються)",
-  "spv_cache": "⚠ Якщо в shadPS4 увімкнено кеш шейдерів, після встановлення пропатченого шейдера видаліть старий кеш шейдерів гри - інакше емулятор продовжить використовувати старий скомпільований шейдер, і відео не зміниться.",
+  "spv_cache": '⚠ Важливо: за ввімкненого кешу шейдерів shadPS4 може й надалі брати стоковий шейдер із кешу, а не з user/shader/patch. Вкажіть теку або ZIP кешу в полі «Кеш шейдерів» (у CLI — --cache), і патчер пропатчить шейдер просто там.',
   "put_xml": "   -> перенесіть у папку shadPS4: %s",
   "put_spv": "   -> перенесіть у папку shadPS4: %s",
   "put_all": "Скопіюйте папку «user» зі створеної папки ShadPS4 у вашу папку shadPS4 (з об'єднанням і заміною файлів).",
@@ -268,6 +315,29 @@ TR = {
   "sum_cap": " | безпечно вивільнити у CPU: %d МБ", "g_log": "Журнал", "g_go": "Створити патч",
   "done_title": "Готово", "done_msg": "Файли збережено. Подробиці — в журналі.", "err_title": "Помилка", "err_prefix": "Помилка: %s",
   "log_xml": "XML збережено: %s", "log_spv": "Шейдер: %s\n  -> %s",
+  'g_cache': 'Кеш шейдерів (тимчасове рішення)',
+  'g_cachep': 'Кеш:',
+  'g_dir': 'Тека…',
+  'g_zip': 'ZIP…',
+  'ph_cache': "необов'язково — тека або .zip з кешем шейдерів shadPS4",
+  'g_cachehint': 'Обхід бага shadPS4: за ввімкненого кешу шейдерів із другого запуску емулятор ігнорує user/shader/patch і бере стоковий шейдер із кешу. Патчер знаходить шейдер відео в кеші (за розміром і SHA-256) та патчить його на місці. Перед цим закрийте гру і shadPS4. Оригінал шейдера зберігається в теку «backup».',
+  'cache_scan': 'Кеш шейдерів: скануємо %s',
+  'cache_stat': '   перевірено файлів: %d · збігся розмір: %d · підтверджено SHA-256: %d',
+  'cache_hit_orig': '   знайдено стоковий шейдер відео: %s',
+  'cache_hit_patched': '   знайдено вже пропатчений шейдер відео: %s',
+  'cache_backup': '   копія оригіналу: %s',
+  'cache_zip': '   перезбираємо архів, це може тривати певний час…',
+  'cache_done': '✔ Кеш шейдерів: пропатчено файлів — %d (%dx%d).',
+  'cache_reset': '✔ Кеш шейдерів: раніше пропатчений шейдер приведено до нейтрального вигляду (16:9), файлів: %d.',
+  'cache_same': 'Кеш шейдерів: шейдер уже пропатчено під %dx%d — міняти нічого.',
+  'cache_skip169': 'Кеш шейдерів не чіпали: для 16:9 шейдер відео не потрібен.',
+  'cache_nf_log': '⚠ Кеш шейдерів: шейдер відео не знайдено (див. підказку).',
+  'cache_nf_title': 'Шейдер відео не знайдено в кеші',
+  'cache_nf_msg': "Шейдера відеороликів поки немає в кеші шейдерів.\n\nВін з'являється там лише після того, як у грі відтворено катсцену. Що потрібно зробити:\n1. Запустіть гру та увімкніть будь-яку катсцену — наприклад, Options → Credits (титри також є катсценою).\n2. Повністю закрийте гру.\n3. Запустіть патчер ще раз із тим самим шляхом до кешу.",
+  'cache_err_path': 'Шлях до кешу шейдерів не знайдено: %s',
+  'cache_err_type': 'Указаний файл не є ZIP-архівом: %s',
+  'cache_err_write': 'Не вдалося записати в кеш шейдерів: %s\nЗакрийте гру та shadPS4 і повторіть спробу.',
+  'cache_err_verify': 'Перевірка після запису не пройдена — вихідний архів залишено без змін.',
  },
 }
 
@@ -680,6 +750,165 @@ def patch_spv(data, R):
 
 
 # ----------------------------------------------------------------------------------------
+# Кэш шейдеров shadPS4: заглушка на время, пока эмулятор при включённом кэше берёт стоковый шейдер
+# вместо user/shader/patch. Ищем шейдер видео в папке/ZIP кэша по размеру + SHA-256 и патчим на месте.
+# ----------------------------------------------------------------------------------------
+SPV_ORIG_SIZE = 4144                     # размер оригинального шейдера видео (cs_0x00000000562c4394_0.spv)
+SPV_ORIG_SHA256 = "0dc367b61caecdd39e35a827576323b28fa129da38e3774baff9ec131b599337"
+SPV_PATCHED_MAX_EXTRA = 256              # пропатченный шейдер длиннее оригинала максимум на столько байт
+SPV_CANON_R = 1.5                        # «пробное» R для опознания пропатченной версии (любого R)
+SPV_CANON_SHA256 = "7006771ef698104827aaeae22e10a0566fdc9655964270c2b2ae23480cbd9485"           # sha256(patch_spv(оригинал, SPV_CANON_R))
+
+
+class CacheError(Exception):
+    pass
+
+
+def _size_ok(n):
+    """Дешёвый предфильтр: считаем хэш только у файлов подходящего размера."""
+    return n == SPV_ORIG_SIZE or (SPV_ORIG_SIZE < n <= SPV_ORIG_SIZE + SPV_PATCHED_MAX_EXTRA and n % 4 == 0)
+
+
+def spv_kind(data):
+    """'orig' - стоковый шейдер видео, 'patched' - он же, уже пропатченный нами (под любое R), иначе None."""
+    n = len(data)
+    if n == SPV_ORIG_SIZE:
+        return "orig" if hashlib.sha256(data).hexdigest() == SPV_ORIG_SHA256 else None
+    if _size_ok(n):
+        try:
+            probe, _ = patch_spv(data, SPV_CANON_R)
+        except Exception:
+            return None
+        return "patched" if hashlib.sha256(probe).hexdigest() == SPV_CANON_SHA256 else None
+    return None
+
+
+def _backup_original(backup_dir, label, data, n):
+    os.makedirs(backup_dir, exist_ok=True)
+    base = re.sub(r'[^\w.\-]+', '_', os.path.basename(label.replace('\\', '/'))) or "shader.spv"
+    stem, ext = os.path.splitext(base)
+    p = os.path.join(backup_dir, "%s_%s_%d%s" % (stem, time.strftime("%Y%m%d-%H%M%S"), n, ext or ".spv"))
+    with open(p, 'wb') as f: f.write(data)
+    return p
+
+
+def _rewrite_zip(path, repl):
+    """Пересобирает ZIP, подменяя записи repl {индекс: байты}. Сначала во временный файл, проверка, затем атомарная замена."""
+    tmp = path + ".patching"
+    try:
+        with zipfile.ZipFile(path) as zin, zipfile.ZipFile(tmp, 'w', allowZip64=True) as zout:
+            zout.comment = zin.comment
+            for i, inf in enumerate(zin.infolist()):
+                ni = copy.copy(inf)
+                if i in repl:
+                    zout.writestr(ni, repl[i], compress_type=inf.compress_type)
+                elif inf.is_dir():
+                    zout.writestr(ni, b"")
+                else:
+                    with zin.open(inf) as src, zout.open(ni, 'w', force_zip64=inf.file_size >= (1 << 31) - 1) as dst:
+                        shutil.copyfileobj(src, dst, 1 << 20)
+        with zipfile.ZipFile(tmp) as chk:               # проверяем результат до замены оригинала
+            names = chk.infolist()
+            for i, data in repl.items():
+                if chk.read(names[i]) != data: raise CacheError(tr("cache_err_verify"))
+        os.replace(tmp, path)
+    except CacheError:
+        raise
+    except OSError as e:
+        raise CacheError(tr("cache_err_write", e))
+    finally:
+        if os.path.exists(tmp):
+            try: os.remove(tmp)
+            except OSError: pass
+
+
+def patch_cache(path, W, H, backup_dir, log=print):
+    """Находит шейдер видео в кэше (папка или ZIP) и патчит его под W×H.
+    Возвращает dict(status=patched|reset|same|skip169|notfound, changed=N, text=итоговая строка)."""
+    path = os.path.abspath(os.path.expanduser(path.strip().strip('"')))
+    if not os.path.exists(path):
+        raise CacheError(tr("cache_err_path", path))
+    is_zip = os.path.isfile(path)
+    if is_zip and not zipfile.is_zipfile(path):
+        raise CacheError(tr("cache_err_type", path))
+    neutral = is_169(W, H)                               # для 16:9 шейдер не нужен: максимум - сбросить ранее наложенный патч
+    R = 1.0 if neutral else (W / H) / (16 / 9)
+    log(tr("cache_scan", path))
+
+    scanned = cands = 0
+    hits = []                                            # (ключ, вид, байты)
+    if is_zip:
+        zf = zipfile.ZipFile(path)
+        try:
+            infos = zf.infolist()
+            for i, inf in enumerate(infos):
+                if inf.is_dir(): continue
+                scanned += 1
+                if not _size_ok(inf.file_size): continue
+                cands += 1
+                data = zf.read(inf); k = spv_kind(data)
+                if k: hits.append((i, k, data))
+            label = lambda key: "%s → %s" % (os.path.basename(path), infos[key].filename)
+        finally:
+            zf.close()
+    else:
+        for dp, _, fns in os.walk(path):
+            for fn in fns:
+                fp = os.path.join(dp, fn)
+                try: size = os.path.getsize(fp)
+                except OSError: continue
+                scanned += 1
+                if not _size_ok(size): continue
+                cands += 1
+                try:
+                    with open(fp, 'rb') as f: data = f.read()
+                except OSError: continue
+                k = spv_kind(data)
+                if k: hits.append((fp, k, data))
+        label = lambda key: os.path.relpath(key, path)
+    log(tr("cache_stat", scanned, cands, len(hits)))
+    for key, k, _ in hits:
+        log(tr("cache_hit_orig" if k == "orig" else "cache_hit_patched", label(key)))
+
+    if not hits:
+        if neutral:
+            return dict(status="skip169", changed=0, text=tr("cache_skip169"))
+        return dict(status="notfound", changed=0, text=tr("cache_nf_log"))
+
+    plan = []                                            # что реально меняем
+    for key, k, data in hits:
+        if neutral and k == "orig": continue
+        new, _ = patch_spv(data, R)
+        if new != data: plan.append((key, k, data, new))
+    if not plan:
+        return dict(status="skip169" if neutral else "same", changed=0,
+                    text=tr("cache_skip169") if neutral else tr("cache_same", W, H))
+
+    for n, (key, k, data, _) in enumerate(plan):         # копия стокового шейдера (пропатченные не копируем)
+        if k == "orig":
+            log(tr("cache_backup", _backup_original(backup_dir, label(key), data, n)))
+    try:
+        if is_zip:
+            log(tr("cache_zip"))
+            _rewrite_zip(path, {key: new for key, _, _, new in plan})
+        else:
+            for key, _, _, new in plan:
+                tmp = key + ".patching"
+                try:
+                    with open(tmp, 'wb') as f: f.write(new)
+                    os.replace(tmp, key)
+                finally:
+                    if os.path.exists(tmp):
+                        try: os.remove(tmp)
+                        except OSError: pass
+    except OSError as e:
+        raise CacheError(tr("cache_err_write", e))
+    if neutral:
+        return dict(status="reset", changed=len(plan), text=tr("cache_reset", len(plan)))
+    return dict(status="patched", changed=len(plan), text=tr("cache_done", len(plan), W, H))
+
+
+# ----------------------------------------------------------------------------------------
 # CLI
 # ----------------------------------------------------------------------------------------
 def cli(a):
@@ -700,7 +929,17 @@ def cli(a):
     elif a.spv:
         R = (W / H) / (16 / 9)
         out, msg = patch_spv(open(a.spv[0], 'rb').read(), R)
-        open(a.spv[1], 'wb').write(out); print("SPV:", a.spv[1], "-", msg); print(tr("spv_cache"))
+        open(a.spv[1], 'wb').write(out); print("SPV:", a.spv[1], "-", msg)
+        if not a.cache: print(tr("spv_cache"))
+    if a.cache:
+        try:
+            res = patch_cache(a.cache, W, H, os.path.join(out_root(), "backup"), print)
+        except CacheError as e:
+            print(tr("err_prefix", e)); return 1
+        print(res["text"])
+        if res["status"] == "notfound":
+            print(); print(tr("cache_nf_msg")); return 3
+    return 0
 
 
 # ----------------------------------------------------------------------------------------
@@ -794,6 +1033,27 @@ def gui():
 
         def text(s): return s.edit.text().strip()
 
+    class CacheRow(Q.QWidget):
+        """Путь к кэшу шейдеров: папка или ZIP-архив (две кнопки выбора)."""
+        def __init__(s):
+            super().__init__()
+            h = Q.QHBoxLayout(s); h.setContentsMargins(0, 0, 0, 0)
+            s.lbl = Q.QLabel(tr("g_cachep")); s.lbl.setMinimumWidth(110)
+            s.edit = Q.QLineEdit(); s.edit.setPlaceholderText(tr("ph_cache")); s.edit.setClearButtonEnabled(True)
+            bd, bz = Q.QPushButton(tr("g_dir")), Q.QPushButton(tr("g_zip"))
+            h.addWidget(s.lbl); h.addWidget(s.edit, 1); h.addWidget(bd); h.addWidget(bz)
+            bd.clicked.connect(s.pick_dir); bz.clicked.connect(s.pick_zip)
+
+        def pick_dir(s):
+            f = Q.QFileDialog.getExistingDirectory(s, tr("g_cache"), s.edit.text())
+            if f: s.edit.setText(f)
+
+        def pick_zip(s):
+            f = Q.QFileDialog.getOpenFileName(s, tr("g_cache"), s.edit.text(), "ZIP (*.zip);;*")[0]
+            if f: s.edit.setText(f)
+
+        def text(s): return s.edit.text().strip()
+
     class Win(Q.QMainWindow):
         PRESETS = [("21:9  2560×1080", 2560, 1080), ("21:9  3440×1440", 3440, 1440), ("21:9  2240×960", 2240, 960),
                    ("21:9  3840×1646", 3840, 1646), ("32:9  3840×1080", 3840, 1080), ("16:10 1920×1200", 1920, 1200),
@@ -830,6 +1090,12 @@ def gui():
             for r in (s.eboot, s.xmlin, s.spvin): gl.addWidget(r)
             hint = Q.QLabel(tr("g_outhint")); hint.setObjectName("subtitle"); hint.setWordWrap(True); gl.addWidget(hint)
             left.addWidget(g)
+
+            # --- кэш шейдеров (заглушка под баг shadPS4)
+            gc = Q.QGroupBox(tr("g_cache")); gcl = Q.QVBoxLayout(gc)
+            s.cache = CacheRow(); gcl.addWidget(s.cache)
+            ch = Q.QLabel(tr("g_cachehint")); ch.setObjectName("subtitle"); ch.setWordWrap(True); gcl.addWidget(ch)
+            left.addWidget(gc)
 
             # --- память: основной режим + расширенные настройки за галочкой
             g4 = Q.QGroupBox(tr("g_mem")); gm = Q.QVBoxLayout(g4)
@@ -904,7 +1170,8 @@ def gui():
                 s.w.blockSignals(False); s.h.blockSignals(False)
             s.refresh()
 
-        def say(s, t): s.log.appendPlainText(t)
+        def say(s, t):
+            s.log.appendPlainText(t); Q.QApplication.processEvents()
 
         def repolish(s, *ws):
             for w_ in ws: w_.style().unpolish(w_); w_.style().polish(w_)
@@ -952,7 +1219,8 @@ def gui():
 
         def run(s):
             Wd, Hd = s.w.value(), s.h.value(); R = (Wd / Hd) / (16 / 9)
-            did = False; spv_done = False
+            did = False; spv_done = False; cres = None
+            cache = s.cache.text()
             root = out_root(s.xmlin.text(), s.eboot.text(), s.spvin.text())
             try:
                 if True:   # XML создаётся всегда (поля «Сохранить …» убраны)
@@ -972,8 +1240,22 @@ def gui():
                     out = out_spv_path(s.spvin.text(), root)
                     os.makedirs(os.path.dirname(out), exist_ok=True)
                     open(out, 'wb').write(res)
-                    s.say(tr("log_spv", msg, out)); s.say(tr("put_spv", os.path.join(SPV_REL, os.path.basename(out)))); s.say(tr("spv_cache")); did = spv_done = True
-                if did: Q.QMessageBox.information(s, tr("done_title"), tr("done_msg") + "\n" + root + "\n\n" + tr("put_all") + ("\n\n" + tr("spv_cache") if spv_done else ""))
+                    s.say(tr("log_spv", msg, out)); s.say(tr("put_spv", os.path.join(SPV_REL, os.path.basename(out))))
+                    if not cache: s.say(tr("spv_cache"))
+                    did = spv_done = True
+                if cache:   # обход бага кэша: патчим шейдер прямо в папке/ZIP кэша
+                    s.go.setEnabled(False); Q.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+                    try:
+                        cres = patch_cache(cache, Wd, Hd, os.path.join(root, "backup"), s.say)
+                    finally:
+                        Q.QApplication.restoreOverrideCursor(); s.go.setEnabled(True)
+                    s.say(cres["text"])
+                done = tr("done_msg") + "\n" + root + "\n\n" + tr("put_all")
+                if cres and cres["status"] == "notfound":
+                    Q.QMessageBox.warning(s, tr("cache_nf_title"), done + "\n\n" + tr("cache_nf_msg"))
+                elif did or cres:
+                    extra = ("\n\n" + cres["text"]) if cres else ("\n\n" + tr("spv_cache") if spv_done else "")
+                    Q.QMessageBox.information(s, tr("done_title"), done + extra)
             except Exception as e:
                 s.say(tr("err_prefix", e)); Q.QMessageBox.critical(s, tr("err_title"), str(e))
 
@@ -990,7 +1272,8 @@ if __name__ == "__main__":
     ap.add_argument("--cli", nargs=2, type=int, metavar=("W", "H"))
     ap.add_argument("--eboot"); ap.add_argument("--xml", nargs=2, metavar=("IN", "OUT"))
     ap.add_argument("--spv", nargs=2, metavar=("IN", "OUT")); ap.add_argument("--aggressive", action="store_true"); ap.add_argument("--extra", type=int, default=0, help="доп. direct-память сверх 4608 МБ (чётное число МБ)"); ap.add_argument("--dmem", action="store_true", help="режим с расширением dmem: CPU не урезается"); ap.add_argument("--keep-old", action="store_true", help="не отключать прежние разрешающие секции в базовом XML"); ap.add_argument("--frac", type=float, default=100.0, help="доля бюджета RT, зависящая от разрешения, %% (по умолчанию 100)")
+    ap.add_argument("--cache", metavar="DIR|ZIP", help="кэш шейдеров shadPS4 (папка или .zip): найти шейдер видео и пропатчить в нём")
     ap.add_argument("--lang", choices=["en", "ru", "uk"], help="язык интерфейса и описаний патча (по умолчанию - язык системы, иначе en)")
     a = ap.parse_args()
     LANG = a.lang or detect_lang()
-    cli(a) if a.cli else gui()
+    sys.exit(cli(a)) if a.cli else gui()

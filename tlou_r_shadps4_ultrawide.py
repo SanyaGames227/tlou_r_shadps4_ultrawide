@@ -4,8 +4,8 @@
 TLOU Remastered (PS4, AppVer 01.11) - генератор патча любого разрешения / соотношения сторон
 для shadPS4: XML-патч (eboot.bin) + замена SPIR-V шейдера видеороликов.
 
-GUI (PyQt5):   python3 tlou_ultrawide.py
-CLI:           python3 tlou_ultrawide.py --cli 2560 1080 --root <папка shadPS4> [--xml свой.xml] [--dmem] [--lang en|ru|uk]
+GUI (PyQt5):   python3 tlou_r_shadps4_ultrawide.py
+CLI:           python3 tlou_r_shadps4_ultrawide.py --cli 2560 1080 --root <папка shadPS4> [--xml свой.xml] [--dmem] [--lang en|ru|uk]
 Указывается только папка shadPS4: XML берётся/создаётся в user/patches, шейдер видео патчится в user/cache (ZIP игры или файлы)
 либо создаётся в user/shader/patch из user/shader/dumps. Без --xml патч добавляется в актуальный XML с GitHub.
 """
@@ -55,10 +55,13 @@ TR = {
   "sh_found": "Video shader found (%s)",
   "sh_cache": "cache",
   "sh_dumps": "dumps",
+  "sh_patch": "patch folder",
   "sh_none": "Video shader not found: play any cutscene with Shader Cache or Shader Dumping enabled",
   "games_found": "Games found: %s",
   "root_games": "Installed versions: %s",
   "no_change": "Area is not larger than 1920x1080 - no memory budget changes needed.",
+  "res_w16": "The width must be a multiple of 16 (the game crashes otherwise). Nearest values: %d or %d.",
+  "budget_gpu": "A resolution of %dx%d does not fit: the game cannot allocate more than %d MB of GPU memory (a hard limit, dmem does not help). The maximum for this aspect ratio is about %dx%d.",
   "budget_err": "A resolution of %dx%d requires %d MB of additional GPU memory, but only %d MB can be taken from CPU memory%s. Select the Extended memory mode or a lower resolution.",
   "no_aggr": "",
   "margin_note": "(margin reduced to 1.0)",
@@ -103,6 +106,8 @@ TR = {
   "g_width": "Width:",
   "g_height": "Height:",
   "g_custom": "Custom…",
+  "g_max": "Max",
+  "g_max_tip": "Set the maximum resolution for this aspect ratio",
   "g_ratio": "Aspect ratio: %d:%d (%.2f:1)",
   "g_narrow": "Narrower than 16:9: HUD edges will be cropped.",
   "g_browse": "Browse…",
@@ -176,10 +181,13 @@ TR = {
   "sh_found": "Шейдер видео найден (%s)",
   "sh_cache": "кэш",
   "sh_dumps": "дампы",
+  "sh_patch": "папка патчей",
   "sh_none": "Шейдер видео не найден: запустите катсцену при включённом Shader Cache или Shader Dumping",
   "games_found": "Найдены версии игры: %s",
   "root_games": "Установленные версии игры: %s",
   "no_change": "Площадь не больше 1920x1080 - бюджеты памяти менять не нужно.",
+  "res_w16": "Ширина должна быть кратна 16 (иначе игра вылетает). Ближайшие значения: %d и %d.",
+  "budget_gpu": "Разрешение %dx%d не помещается: игра не может выделить GPU-память больше %d МБ (жёсткий лимит, dmem не поможет). Максимум для этого соотношения сторон — примерно %dx%d.",
   "budget_err": "Для разрешения %dx%d требуется дополнительно %d МБ памяти GPU, однако у CPU можно безопасно забрать только %d МБ%s. Выберите расширенный режим памяти или меньшее разрешение.",
   "no_aggr": "",
   "margin_note": "(запас уменьшен до 1.0)",
@@ -224,6 +232,8 @@ TR = {
   "g_width": "Ширина:",
   "g_height": "Высота:",
   "g_custom": "Свой…",
+  "g_max": "Макс.",
+  "g_max_tip": "Подставить максимальное разрешение для этого соотношения сторон",
   "g_ratio": "Соотношение сторон: %d:%d (%.2f:1)",
   "g_narrow": "Уже 16:9: края HUD будут обрезаны.",
   "g_browse": "Обзор…",
@@ -297,10 +307,13 @@ TR = {
   "sh_found": "Шейдер відео знайдено (%s)",
   "sh_cache": "кеш",
   "sh_dumps": "дампи",
+  "sh_patch": "тека патчів",
   "sh_none": "Шейдер відео не знайдено: запустіть катсцену при ввімкненому Shader Cache або Shader Dumping",
   "games_found": "Знайдено версії гри: %s",
   "root_games": "Встановлені версії гри: %s",
   "no_change": "Площа не більша за 1920x1080 - бюджети пам'яті змінювати не потрібно.",
+  "res_w16": "Ширина має бути кратна 16 (інакше гра вилітає). Найближчі значення: %d і %d.",
+  "budget_gpu": "Роздільна здатність %dx%d не вміщується: гра не може виділити GPU-пам'яті більше %d МБ (жорсткий ліміт, dmem не допоможе). Максимум для цього співвідношення сторін — приблизно %dx%d.",
   "budget_err": "Для роздільної здатності %dx%d потрібно додатково %d МБ пам'яті GPU, проте у CPU можна безпечно забрати лише %d МБ%s. Виберіть розширений режим пам'яті або меншу роздільну здатність.",
   "no_aggr": "",
   "margin_note": "(запас зменшено до 1.0)",
@@ -345,6 +358,8 @@ TR = {
   "g_width": "Ширина:",
   "g_height": "Висота:",
   "g_custom": "Власна…",
+  "g_max": "Макс.",
+  "g_max_tip": "Підставити максимальну роздільну здатність для цього співвідношення сторін",
   "g_ratio": "Співвідношення сторін: %d:%d (%.2f:1)",
   "g_narrow": "Вужче за 16:9: краї HUD будуть обрізані.",
   "g_browse": "Огляд…",
@@ -486,6 +501,9 @@ class BudgetError(Exception):
 def calc_budget(W, H, aggressive=False, frac=1.0, margins=None, extra=0):
     """Возвращает (lines, rows, info). rows: (имя, было МБ, стало МБ). Ничего не удаляет и не ломает
     инварианты игры: PRX+CPU+GPU = 4608 МБ, суммы подбюджетов CPU и GPU сходятся ТОЧНО, CPU/GPU кратны 2 МБ."""
+    if W % 16:                                   # ассерт игры: displaySize.m_w % 16 == 0
+        lo = W // 16 * 16
+        raise BudgetError(tr("res_w16", lo if lo >= 16 else 16, lo + 16))
     O = {a: v[1] for a, v in ORIG_BUDGET.items()}
     area = (W * H) / (BASE_W * BASE_H)
     area = 1.0 + (area - 1.0) * frac if area > 1.0 else area   # frac: доля бюджета, зависящая от разрешения
@@ -516,14 +534,15 @@ def calc_budget(W, H, aggressive=False, frac=1.0, margins=None, extra=0):
     if D > gpu_room:                         # GPU_MEMORY не должен превысить 4096 МБ
         mg1 = {a: 1.0 for a in mg}
         nw, D = plan(mg1); note = tr("margin_note")
-        if D > gpu_room:
+        if D > gpu_room:                     # потолок 4 GiB: урезать рост render target нельзя (игра падает: Render Target Heap out of memory)
             area0 = area
-            for pct in range(99, 0, -1):     # подгоняем рост бюджета под потолок
+            for pct in range(99, 0, -1):     # максимум, который помещается (с проверенным запасом)
                 area = 1.0 + (area0 - 1.0) * pct / 100
-                nw, D = plan(mg1)
+                nw, D = plan(mg)
                 if D <= gpu_room: break
-            capped = pct
-            note += tr("gpu_cap_note", GPU_MAX_MB, pct)
+            k = math.sqrt(area / ((W * H) / (BASE_W * BASE_H)))
+            wmax = int(W * k) // 16 * 16             # ширина кратна 16 (требование игры)
+            raise BudgetError(tr("budget_gpu", W, H, GPU_MAX_MB, wmax, int(wmax * H / W) // 2 * 2))
     if D - extra > cap:
         nw, D = plan({a: 1.0 for a in mg})
         note = tr("margin_note")
@@ -556,6 +575,22 @@ def calc_budget(W, H, aggressive=False, frac=1.0, margins=None, extra=0):
     info = dict(D=D, cap=cap, gpu_capped=capped, area=area, total=total, dmem_mb=total, expanded=(total != DMEM_BASE_MB), cut=cut_total,
                 text=tr("info_text", D, cut_total, total, tr("info_exp") if total != 4608 else tr("info_orig"), note))
     return lines, rows, info
+
+
+def max_res(W, H, extra=0):
+    """Максимальное разрешение с тем же соотношением сторон: ширина кратна 16, проходит calc_budget."""
+    def ok(n):
+        w = n * 16; h = max(2, int(w * H / W) // 2 * 2)
+        try: calc_budget(w, h, False, 1.0, None, extra); return True
+        except BudgetError: return False
+    lo, hi = 40, 1024                            # ширина 640..16384
+    if not ok(lo): return W, H
+    while lo < hi:
+        m = (lo + hi + 1) // 2
+        if ok(m): lo = m
+        else: hi = m - 1
+    w = lo * 16
+    return w, max(2, int(w * H / W) // 2 * 2)
 
 
 # ----------------------------------------------------------------------------------------
@@ -661,6 +696,8 @@ def make_metadata(W, H, aggressive, frac=1.0, extra=0):
         note += " Allocate +%d MB dmem in shadPS4." % need
     if not is_169(W, H):
         note += " WARNING: introduces a cutscenes stretch, for the fix search for 'sanyagames227/tlou_r_shadps4_ultrawide' on GitHub."
+    if R < 0.999:
+        note += " NOTE: aspect ratio narrower than 16:9 - the UI (HUD) will be cropped at the edges."
     note = note.replace('&', '&amp;').replace('"', '&quot;').replace('<', '&lt;')
     return ('    <Metadata Title="The Last of Us Remastered" Name="%s" Note="%s" Author="%s" '
             'PatchVer="1.0" AppVer="01.11" AppElf="eboot.bin" isEnabled="true">\n    <PatchList>\n%s\n'
@@ -1180,7 +1217,7 @@ def app_dir():
     return os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else os.path.dirname(os.path.abspath(__file__))
 
 
-CFG_FILE = "tlou_ultrawide.json"
+CFG_FILE = "tlou_r_shadps4_ultrawide.json"
 
 
 def load_cfg():
@@ -1247,13 +1284,17 @@ def patch_shader_auto(root, W, H, log=print, dry=False):
     patch_dir = os.path.join(root, SPV_REL)
     backup = os.path.join(out_root(), "backup")
     lg = (lambda *a: None) if dry else log
-    out = dict(found=False, cache=False, dumps=False, targets=[], texts=[], changed=0)
+    out = dict(found=False, cache=False, dumps=False, patch=False, targets=[], texts=[], changed=0)
 
     def run(src):
         r = patch_cache(src, W, H, backup, lg, patch_dir, dry)
         if r["status"] != "notfound":
-            out["found"] = True; out["dumps" if src == dumps else "cache"] = True
-        out["targets"] += r.get("targets", []); out["changed"] += r["changed"]
+            out["found"] = True; out["dumps" if src == dumps else "patch" if src == patch_dir else "cache"] = True
+        tg = r.get("targets", [])
+        if src == patch_dir:                             # не дублируем файлы, уже учтённые при обработке дампов
+            have = {os.path.basename(t) for t in out["targets"]}
+            tg = [os.path.join(patch_dir, t) for t in tg if os.path.basename(t) not in have]
+        out["targets"] += tg; out["changed"] += r["changed"]
         if not dry: out["texts"].append(r["text"])
         return r["status"] != "notfound"
     if os.path.isdir(cache):
@@ -1263,6 +1304,8 @@ def patch_shader_auto(root, W, H, log=print, dry=False):
         run(cache)                                       # и отдельные файлы/папки кэша
     if os.path.isdir(dumps):
         run(dumps)
+    if os.path.isdir(patch_dir):                         # ранее созданный патч шейдера (user/shader/patch): обновляем или сбрасываем (напр. возврат на 16:9)
+        run(patch_dir)
     return out
 
 
@@ -1319,7 +1362,7 @@ def apply_patch(root, W, H, extra, own_xml=None, confirm=None, log=print, keep_c
 
 
 # ----------------------------------------------------------------------------------------
-# CLI:  python3 tlou_ultrawide.py --cli 2560 1080 --root <папка shadPS4> [--xml свой.xml] [--dmem]
+# CLI:  python3 tlou_r_shadps4_ultrawide.py --cli 2560 1080 --root <папка shadPS4> [--xml свой.xml] [--dmem]
 # ----------------------------------------------------------------------------------------
 def cli(a):
     if not a.root:
@@ -1381,9 +1424,10 @@ def gui():
         return x
 
     class Win(Q.QMainWindow):
-        PRESETS = [("21:9  2560×1080", 2560, 1080), ("21:9  3440×1440", 3440, 1440), ("21:9  2240×960", 2240, 960),
-                   ("21:9  3840×1646", 3840, 1646), ("32:9  3840×1080", 3840, 1080), ("16:10 1920×1200", 1920, 1200),
-                   ("16:10 2560×1600", 2560, 1600), ("16:9  2560×1440", 2560, 1440), (None, 0, 0)]
+        PRESETS = [("16:9  2560×1440", 2560, 1440), ("16:9  2880×1620", 2880, 1620), ("16:9  3840×2160", 3840, 2160),
+                   ("16:10 1920×1200", 1920, 1200), ("16:10 2560×1600", 2560, 1600),
+                   ("21:9  2240×960", 2240, 960), ("21:9  2560×1080", 2560, 1080), ("21:9  3440×1440", 3440, 1440),
+                   ("21:9  3840×1646", 3840, 1646), ("32:9  3840×1080", 3840, 1080), (None, 0, 0)]
 
         def __init__(s):
             super().__init__()
@@ -1407,9 +1451,10 @@ def gui():
             g = Q.QGroupBox("2. " + tr("g_res")); gl = Q.QVBoxLayout(g)
             r = Q.QHBoxLayout()
             s.pre = Q.QComboBox(); [s.pre.addItem(p[0] or tr("g_custom")) for p in s.PRESETS]
-            s.w = Q.QSpinBox(); s.w.setRange(640, 16384); s.w.setValue(2560); s.w.setSuffix(" px")
+            s.w = Q.QSpinBox(); s.w.setRange(640, 16384); s.w.setValue(2560); s.w.setSingleStep(16); s.w.setSuffix(" px")
             s.h = Q.QSpinBox(); s.h.setRange(360, 8640); s.h.setValue(1080); s.h.setSuffix(" px")
-            for x in (s.pre, Q.QLabel(tr("g_width")), s.w, Q.QLabel(tr("g_height")), s.h): r.addWidget(x)
+            s.mx = Q.QPushButton(tr("g_max")); s.mx.setObjectName("secondary"); s.mx.setToolTip(tr("g_max_tip"))
+            for x in (s.pre, Q.QLabel(tr("g_width")), s.w, Q.QLabel(tr("g_height")), s.h, s.mx): r.addWidget(x)
             r.addStretch(1); gl.addLayout(r)
             s.info = lab("", "chip"); gl.addWidget(s.info)
             s.sh_info = lab(tr("sh_info"), "hint"); gl.addWidget(s.sh_info)
@@ -1441,14 +1486,14 @@ def gui():
             s.go = Q.QPushButton(tr("g_go")); s.go.setObjectName("primary")
             hb = Q.QHBoxLayout(); cr = Q.QLabel("by sanyagames227 and Claude AI"); cr.setObjectName("hint"); hb.addWidget(cr); hb.addStretch(1); hb.addWidget(s.go); v.addLayout(hb)
 
-            s.pre.currentIndexChanged.connect(s.on_pre)
-            s.w.valueChanged.connect(s.refresh); s.h.valueChanged.connect(s.refresh)
+            s.pre.currentIndexChanged.connect(s.on_pre); s.mx.clicked.connect(s.set_max)
+            s.w.valueChanged.connect(s.on_size); s.h.valueChanged.connect(s.on_size)
             s.mode.currentIndexChanged.connect(s.refresh)
             s.rb_own.toggled.connect(s.on_src)
             s.scan_timer = QtCore.QTimer(s); s.scan_timer.setSingleShot(True); s.scan_timer.setInterval(500); s.scan_timer.timeout.connect(s.scan)
             s.root.textChanged.connect(s.check_root); s.own.textChanged.connect(s.refresh)
             s.go.clicked.connect(s.run)
-            s.on_pre(0); s.check_root(); s.adjust()
+            s.pre.setCurrentIndex(next(k for k, p in enumerate(s.PRESETS) if p[1:] == (2560, 1080))); s.on_pre(s.pre.currentIndex()); s.check_root(); s.adjust()
 
         def adjust(s):
             """Фиксированная ширина; высота подстраивается под видимые элементы."""
@@ -1471,6 +1516,18 @@ def gui():
 
         def on_src(s, own):
             s.own_box.setVisible(own); s.refresh()
+
+        def on_size(s, *_):
+            """Ручной ввод: в списке выбирается подходящий пресет, а если такого нет, - «Свой…»."""
+            cur = (s.w.value(), s.h.value())
+            i = next((k for k, (_, w, h) in enumerate(s.PRESETS) if w and (w, h) == cur), len(s.PRESETS) - 1)
+            s.pre.blockSignals(True); s.pre.setCurrentIndex(i); s.pre.blockSignals(False)
+            s.refresh()
+
+        def set_max(s):
+            w, h = max_res(s.w.value(), s.h.value(), s.mode_extra())
+            s.w.blockSignals(True); s.h.blockSignals(True); s.w.setValue(w); s.h.setValue(h)
+            s.w.blockSignals(False); s.h.blockSignals(False); s.on_size()
 
         def on_pre(s, i):
             _, w, h = s.PRESETS[i]
@@ -1501,10 +1558,10 @@ def gui():
             if not os.path.isdir(os.path.join(p, "user")): return
             Q.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
             try: r = patch_shader_auto(p, 2560, 1080, lambda *a: None, True)
-            except Exception: r = dict(cache=False, dumps=False)
+            except Exception: r = dict(cache=False, dumps=False, patch=False)
             finally: Q.QApplication.restoreOverrideCursor()
-            if r["cache"] or r["dumps"]:
-                t = tr("sh_found", ", ".join([x for x, f in ((tr("sh_cache"), r["cache"]), (tr("sh_dumps"), r["dumps"])) if f]))
+            if r["cache"] or r["dumps"] or r["patch"]:
+                t = tr("sh_found", ", ".join([x for x, f in ((tr("sh_cache"), r["cache"]), (tr("sh_dumps"), r["dumps"]), (tr("sh_patch"), r["patch"])) if f]))
                 s.root_state.setObjectName("ok")
             else:
                 t = tr("sh_none"); s.root_state.setObjectName("bad")

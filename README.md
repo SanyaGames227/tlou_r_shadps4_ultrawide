@@ -34,11 +34,6 @@ Not needed for 16:9.
 
 <img width="2560" height="1080" src="docs/screenshots/screenshot_2.jpg" />
 
-## Memory mode
-
-- **Extended** (recommended): CPU memory is untouched. After creating the patch, the patcher tells you how much to add to **dmem** in shadPS4 (e.g. `+1500 MB`). The same value is in the patch's Note in the XML.
-- **Standard**: GPU memory is taken from CPU memory. Works with stock shadPS4; rare instability possible.
-
 ## Requirements
 
 Python 3.8+ and PyQt5 (`pip install PyQt5`).

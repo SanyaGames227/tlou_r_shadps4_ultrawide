@@ -5,7 +5,7 @@ TLOU Remastered (PS4, AppVer 01.11) - генератор патча любого
 для shadPS4: XML-патч (eboot.bin) + замена SPIR-V шейдера видеороликов.
 
 GUI (PyQt5):   python3 tlou_r_shadps4_ultrawide.py
-CLI:           python3 tlou_r_shadps4_ultrawide.py --cli 2560 1080 --root <папка shadPS4> [--xml свой.xml] [--dmem] [--lang en|ru|uk]
+CLI:           python3 tlou_r_shadps4_ultrawide.py --cli 2560 1080 --root <папка shadPS4> [--xml свой.xml] [--lang en|ru|uk]
 Указывается только папка shadPS4: XML берётся/создаётся в user/patches, шейдер видео патчится в user/cache (ZIP игры или файлы)
 либо создаётся в user/shader/patch из user/shader/dumps. Без --xml патч добавляется в актуальный XML с GitHub.
 """
@@ -90,6 +90,9 @@ TR = {
   "c_dev": "7. Dev Menu UI",
   "c_icon": "11. Interact/pickup icons: world->canvas X * R (code cave)",
   "c_treasure": "12. Collectibles preview (pickup notification / inventory artifacts): scene camera fov keeps the 16:9 vertical view",
+  "c_quads": "13. Full-canvas HUD quads (pause background, blood, dimming, fades) stretched to the whole screen; the rest of the HUD stays 16:9",
+  "c_sniper": "14. Sniper scope: black side bars extended to the screen edges",
+  "c_aim": "15. Aim reticle / aiming circle fix: x/R + 640*(1-1/R), R=%.6f",
   "err_nopatch": "The base XML has no </Patch>",
   "spv_bad": "Corrupted SPIR-V",
   "spv_not": "This is not SPIR-V",
@@ -149,7 +152,7 @@ TR = {
   "cache_err_type": "The specified file is not a ZIP archive: %s",
   "cache_err_write": "Failed to write to the shader cache: %s\nClose the game and shadPS4 and try again.",
   "cache_err_verify": "Verification after writing failed; the original archive was not modified.",
-  "dm_short": "Required dmem in shadPS4: at least %d MB",
+  "dm_short": "Allocate +%d MB dmem in shadPS4. Calculation: GPU growth %d MB + reserve %d MB = %d MB, rounded up to 500 MB. Total direct memory in the game: %d MB.",
   "g_root": "shadPS4 folder",
   "ph_root": "Select the shadPS4 folder (the one containing «user»)",
   "root_info": "shadPS4 folder recognized. XML: %s; shader cache: %s; shader dumps: %s",
@@ -170,10 +173,6 @@ TR = {
   "xml_repl": "XML file updated: %s",
   "xml_same": "XML file is up to date: %s",
   "done_msg2": "In shadPS4, enable the patch «%s» (right-click the game > Cheats / Patches).",
-  "mode_ext": "Extended: CPU memory is preserved (recommended)",
-  "mode_std": "Standard: CPU memory is reduced",
-  "mode_ext_d": "GPU gets more memory, CPU memory stays untouched. Supported by all recent shadPS4 builds.",
-  "mode_std_d": "GPU memory is taken from CPU memory (sound, loading, screenshots). Works with stock shadPS4, rare instability possible.",
  },
  "ru": {
   "xml_state": "Файл XML: %s",
@@ -216,6 +215,9 @@ TR = {
   "c_dev": "7. Dev Menu UI",
   "c_icon": "11. Иконки взаимодействия/подбора: проекция мир->канвас X * R (code cave)",
   "c_treasure": "12. Превью коллекционных предметов (уведомление о подборе / артефакты в инвентаре): fov камеры сцены сохраняет вертикальный обзор 16:9",
+  "c_quads": "13. Квады худа на весь холст (фон паузы, кровь, затемнения, фейды) растянуты на весь экран; остальной худ остаётся 16:9",
+  "c_sniper": "14. Прицел снайперки: чёрные боковые полосы до краёв экрана",
+  "c_aim": "15. Фикс прицела / круга прицеливания: x/R + 640*(1-1/R), R=%.6f",
   "err_nopatch": "В базовом XML нет </Patch>",
   "spv_bad": "Битый SPIR-V",
   "spv_not": "Это не SPIR-V",
@@ -275,7 +277,7 @@ TR = {
   "cache_err_type": "Указанный файл не является ZIP-архивом: %s",
   "cache_err_write": "Не удалось выполнить запись в кэш шейдеров: %s\nЗакройте игру и shadPS4 и повторите попытку.",
   "cache_err_verify": "Проверка после записи не пройдена; исходный архив не изменён.",
-  "dm_short": "Требуемый dmem в shadPS4: не менее %d МБ",
+  "dm_short": "Выделите в shadPS4 dmem +%d МБ. Расчёт: рост GPU %d МБ + запас %d МБ = %d МБ, округление вверх до 500 МБ. Итоговая прямая память игры: %d МБ.",
   "g_root": "Папка shadPS4",
   "ph_root": "Укажите папку shadPS4 (содержащую «user»)",
   "root_info": "Папка shadPS4 распознана. XML: %s; кэш шейдеров: %s; дампы шейдеров: %s",
@@ -296,10 +298,6 @@ TR = {
   "xml_repl": "Файл XML обновлён: %s",
   "xml_same": "Файл XML актуален: %s",
   "done_msg2": "В shadPS4 включите патч «%s» (правой кнопкой по игре > Cheats / Patches).",
-  "mode_ext": "Расширенный: память CPU сохраняется (рекомендуется)",
-  "mode_std": "Стандартный: память CPU уменьшается",
-  "mode_ext_d": "GPU получает больше памяти, CPU-память не трогается. Поддерживается всеми актуальными сборками shadPS4.",
-  "mode_std_d": "Память GPU берётся из CPU-памяти (звук, загрузка, скриншоты). Работает со стоковым shadPS4, возможна редкая нестабильность.",
  },
  "uk": {
   "xml_state": "Файл XML: %s",
@@ -342,6 +340,9 @@ TR = {
   "c_dev": "7. Dev Menu UI",
   "c_icon": "11. Іконки взаємодії/підбору: проєкція світ->канвас X * R (code cave)",
   "c_treasure": "12. Превʼю колекційних предметів (сповіщення про підбір / артефакти в інвентарі): fov камери сцени зберігає вертикальний огляд 16:9",
+  "c_quads": "13. Квади худа на все полотно (фон паузи, кров, затемнення, фейди) розтягнуто на весь екран; решта худа лишається 16:9",
+  "c_sniper": "14. Приціл снайперки: чорні бічні смуги до країв екрана",
+  "c_aim": "15. Фікс прицілу / кола прицілювання: x/R + 640*(1-1/R), R=%.6f",
   "err_nopatch": "У базовому XML немає </Patch>",
   "spv_bad": "Пошкоджений SPIR-V",
   "spv_not": "Це не SPIR-V",
@@ -401,7 +402,7 @@ TR = {
   "cache_err_type": "Указаний файл не є ZIP-архівом: %s",
   "cache_err_write": "Не вдалося виконати запис у кеш шейдерів: %s\nЗакрийте гру та shadPS4 і повторіть спробу.",
   "cache_err_verify": "Перевірка після запису не пройдена; вихідний архів не змінено.",
-  "dm_short": "Необхідний dmem у shadPS4: щонайменше %d МБ",
+  "dm_short": "Виділіть у shadPS4 dmem +%d МБ. Розрахунок: зростання GPU %d МБ + запас %d МБ = %d МБ, округлення вгору до 500 МБ. Підсумкова пряма пам'ять гри: %d МБ.",
   "g_root": "Тека shadPS4",
   "ph_root": "Вкажіть теку shadPS4 (що містить «user»)",
   "root_info": "Теку shadPS4 розпізнано. XML: %s; кеш шейдерів: %s; дампи шейдерів: %s",
@@ -422,10 +423,6 @@ TR = {
   "xml_repl": "Файл XML оновлено: %s",
   "xml_same": "Файл XML актуальний: %s",
   "done_msg2": "У shadPS4 увімкніть патч «%s» (правою кнопкою по грі > Cheats / Patches).",
-  "mode_ext": "Розширений: пам'ять CPU зберігається (рекомендовано)",
-  "mode_std": "Стандартний: пам'ять CPU зменшується",
-  "mode_ext_d": "GPU отримує більше пам'яті, CPU-пам'ять не чіпається. Підтримується всіма актуальними збірками shadPS4.",
-  "mode_std_d": "Пам'ять GPU береться з CPU-пам'яті (звук, завантаження, скріншоти). Працює зі стоковим shadPS4, можлива рідкісна нестабільність.",
  },
 }
 
@@ -596,6 +593,43 @@ def max_res(W, H, extra=0):
 # ----------------------------------------------------------------------------------------
 # Строки XML-патча
 # ----------------------------------------------------------------------------------------
+# Статические патчи худа (не зависят от разрешения)
+HUD_QUADS = [  # квады на весь холст 1280x720 (пауза, кровь, фейды) растягиваются на весь экран
+    (0xef8d84, "48894da066894102498d9580000000c4c17a105d00c5e25c1ac5e259dbc4c17a106504c5da5c6204c5da59e4e92f000000"),
+    (0xef8de4, "8b055a9667008945988b0559966700894594c5f82e1d4a0000007218c5f82e2544000000720ec74598cdcccc3ac74594000080bfc3"),
+    (0xef8e48, "20e3c4498024f648"),
+    (0xef8e98, "e8e7feffff0f1f00"),
+    (0xef8f41, "c5fa5945980f1f00"),
+    (0xef8f51, "c5fa5845940f1f00"),
+    (0xef8f74, "c5fa5945980f1f00"),
+]
+HUD_SNIPER = [  # хук + код (564 байта) в нулевом хвосте образа
+    (0xef8d40, "e97bb0970090"),
+    (0x1873dc0, "554889e541574881ec280100004889bc24000100004889b42408010000c5fa11"),
+    (0x1873de0, "842410010000c784241801000000000000488bb42408010000c57a1026c57a10"),
+    (0x1873e00, "ae80000000c57829e3c4c1625dddc57829e4c4c15a5fe5c5fa106e04c5fa1096"),
+    (0x1873e20, "84000000c5f828f5c5d25deac5ca5ff2c5f828fec5c25cfdc5f82e3d8c010000"),
+    (0x1873e40, "0f8261010000837e20000f8557010000837e24000f854d010000837e28000f85"),
+    (0x1873e60, "43010000c5f82e1d640100000f8235010000c5f82e255a0100000f8727010000"),
+    (0x1873e80, "c57828c4c53a5cc3c5782e0548010000720ec5f82e3d420100000f8307010000"),
+    (0x1873ea0, "83bc2418010000007531c5f82e1d2e0100000f87d9000000c57828c3c57a101d"),
+    (0x1873ec0, "2401000031d2b880000000c441782ee57638ba8000000031c0eb2fc5f82e2501"),
+    (0x1873ee0, "0100000f82a8000000c57828c4c57a101df7000000ba8000000031c0c441782e"),
+    (0x1873f00, "e5760731d2b880000000c57a100d32e5cfffc57a101532e5cfffc441225cdac4"),
+    (0x1873f20, "41225ed9c57a107c160cc57a1074060cc4410a5cf7c50a5935b3000000c4410a"),
+    (0x1873f40, "58f74889e7b920000000fcf348a54531c0c4a17a100404c4c1782ec07406c421"),
+    (0x1873f60, "7a111c04c4217a1174040c4983c0404981f80001000072d9488bbc2400010000"),
+    (0x1873f80, "4889e6c5fa10842410010000e8af4d68ff838424180100000183bc2418010000"),
+    (0x1873fa0, "020f824afeffff488bbc2400010000488bb42408010000c5fa10842410010000"),
+    (0x1873fc0, "4881c428010000e97a4d68ff000096430000f0c10080a34400e09e4400403144"),
+    (0x1873fe0, "0000003f00b89f44cdcc8cbfcdcc8c3f0ad7a33c"),
+]
+HUD_AIM_CODE = [  # вставка: x/R + 640*(1-1/R) перед пересчётом; вызов 0xAADB50 заменён на неё
+    (0x10fa5e8, "c5fa5905f632dbffc5fa5805f232dbffe95335dbff"),
+    (0x699467, "e87c11a600"),
+]
+
+
 def build_lines(W, H, aggressive=False, frac=1.0, extra=0):
     R = (W / H) / (16 / 9)
     cw = 1280 * R
@@ -655,6 +689,16 @@ def build_lines(W, H, aggressive=False, frac=1.0, extra=0):
     # камера сцены сокровищ: горизонтальный fov 60° -> вертикальный обзор как в 16:9
     fov = 2 * math.atan(R * math.tan(1.0470927953720093 / 2))
     add(0x14c9890, f32(fov)); add(0x14c9928, f32(fov))
+    # --- полноэкранные квады худа (не зависит от R; читает масштаб/смещение из блока 6) ---
+    c(tr("c_quads"))
+    for a, v in HUD_QUADS: add(a, v)
+    # --- чёрные полосы прицела снайперки до краёв экрана (не зависит от R; нужен вместе с блоком выше) ---
+    c(tr("c_sniper"))
+    for a, v in HUD_SNIPER: add(a, v)
+    # --- фикс прицела/круга прицеливания (зависит от R): x/R + 640*(1-1/R) ---
+    c(tr("c_aim", R))
+    add(0xead8e6, f32(1 / R) + f32(640 * (1 - 1 / R)))
+    for a, v in HUD_AIM_CODE: add(a, v)
     return L, rows, info
 
 
@@ -743,18 +787,40 @@ class GhError(Exception):
     pass
 
 
+GH_URLS = [GH_RAW_URL, "https://raw.githubusercontent.com/shadps4-emu/ps4_cheats/main/PATCHES/TheLastOfUsRemastered.xml"]
+
+
+def _ssl_contexts():
+    """Системное хранилище сертификатов, затем certifi (если установлен). Проверка сертификата никогда не отключается."""
+    import ssl
+    out = [ssl.create_default_context()]
+    try:
+        import certifi
+        out.append(ssl.create_default_context(cafile=certifi.where()))
+    except Exception:
+        pass
+    return out
+
+
 def fetch_github_xml(timeout=15):
     import urllib.request
-    req = urllib.request.Request(GH_RAW_URL, headers={"User-Agent": "tlou-ultrawide-patcher"})
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as r:
-            data = r.read(8 * MB)
-        text = data.decode("utf-8-sig")
-    except Exception as e:
-        raise GhError(str(getattr(e, "reason", None) or e))
-    if "</Patch>" not in text or not any(t in text for t in TITLE_IDS):
-        raise GhError(tr("gh_bad"))
-    return text
+    last = None
+    for url in GH_URLS:                                  # зеркальный адрес GitHub, затем повторы с другим набором сертификатов
+        for ctx in _ssl_contexts():
+            for _ in range(2):
+                try:
+                    req = urllib.request.Request(url, headers={"User-Agent": "tlou-ultrawide-patcher"})
+                    with urllib.request.urlopen(req, timeout=timeout, context=ctx) as r:
+                        text = r.read(8 * MB).decode("utf-8-sig")
+                    if "</Patch>" not in text or not any(x in text for x in TITLE_IDS):
+                        raise GhError(tr("gh_bad"))
+                    return text
+                except GhError as e:
+                    last = e
+                except Exception as e:
+                    last = GhError(str(getattr(e, "reason", None) or e))
+                time.sleep(0.5)
+    raise last or GhError(tr("gh_bad"))
 
 
 def _attrs(tag):
@@ -1362,7 +1428,7 @@ def apply_patch(root, W, H, extra, own_xml=None, confirm=None, log=print, keep_c
 
 
 # ----------------------------------------------------------------------------------------
-# CLI:  python3 tlou_r_shadps4_ultrawide.py --cli 2560 1080 --root <папка shadPS4> [--xml свой.xml] [--dmem]
+# CLI:  python3 tlou_r_shadps4_ultrawide.py --cli 2560 1080 --root <папка shadPS4> [--xml свой.xml]
 # ----------------------------------------------------------------------------------------
 def cli(a):
     if not a.root:
@@ -1370,7 +1436,7 @@ def cli(a):
     W, H = a.cli
     ask = (lambda l: input(tr("confirm_msg", "\n".join(l)).replace("\n\n", "\n") + " [y/N] ").strip().lower() in ("y", "yes", "д", "да"))
     try:
-        R = apply_patch(a.root, W, H, resolve_extra('full' if a.dmem else 'off'), a.xml, ask, print, not a.no_keep_custom)
+        R = apply_patch(a.root, W, H, resolve_extra('full'), a.xml, ask, print, not a.no_keep_custom)
     except (ValueError, GhError, OSError, BudgetError, CacheError) as e:
         print(tr("err_prefix", e)); return 1
     for n in R["notes"]: print(n)
@@ -1476,9 +1542,7 @@ def gui():
 
             # 4. память
             g = Q.QGroupBox("4. " + tr("g_mem")); gl = Q.QVBoxLayout(g)
-            s.mode = Q.QComboBox(); s.mode.addItem(tr("mode_ext")); s.mode.addItem(tr("mode_std"))
-            s.mode_desc = lab("", "hint"); s.dm = lab("", "chip")
-            for x in (s.mode, s.mode_desc, s.dm): gl.addWidget(x)
+            s.dm = lab("", "chip"); gl.addWidget(s.dm)
             v.addWidget(g)
 
             s.log = Q.QPlainTextEdit(); s.log.setReadOnly(True); s.log.setFixedHeight(80); s.log.setVisible(False)
@@ -1488,7 +1552,6 @@ def gui():
 
             s.pre.currentIndexChanged.connect(s.on_pre); s.mx.clicked.connect(s.set_max)
             s.w.valueChanged.connect(s.on_size); s.h.valueChanged.connect(s.on_size)
-            s.mode.currentIndexChanged.connect(s.refresh)
             s.rb_own.toggled.connect(s.on_src)
             s.scan_timer = QtCore.QTimer(s); s.scan_timer.setSingleShot(True); s.scan_timer.setInterval(500); s.scan_timer.timeout.connect(s.scan)
             s.root.textChanged.connect(s.check_root); s.own.textChanged.connect(s.refresh)
@@ -1567,7 +1630,7 @@ def gui():
                 t = tr("sh_none"); s.root_state.setObjectName("bad")
             s.root_state.setText(s.base_txt + "\n" + t); s.repolish(s.root_state); s.adjust_later()
 
-        def mode_extra(s): return resolve_extra('full' if s.mode.currentIndex() == 0 else 'off')
+        def mode_extra(s): return resolve_extra('full')
 
         def refresh(s):
             Wd, Hd = s.w.value(), s.h.value(); R = (Wd / Hd) / (16 / 9); g = math.gcd(Wd, Hd)
@@ -1575,11 +1638,11 @@ def gui():
             s.info.setText(tr("g_ratio", Wd // g, Hd // g, Wd / Hd) + ((" " + tr("g_narrow")) if R < 0.999 else "")
                            + ((" " + tr("g_169")) if is_169(Wd, Hd) else ""))
             s.sh_info.setVisible(not is_169(Wd, Hd)); s.repolish(s.info)
-            s.mode_desc.setText(tr("mode_std_d")); s.mode_desc.setVisible(s.mode.currentIndex() == 1)
             ok = os.path.isdir(os.path.join(s.root.text().strip().strip('"'), "user")) and (not s.rb_own.isChecked() or bool(s.own.text().strip()))
             try:
                 _, _, inf = calc_budget(Wd, Hd, False, 1.0, None, s.mode_extra())
-                s.dm.setText(tr("dm_short", inf["dmem_mb"]) if inf["expanded"] else tr("card_ok"))
+                s.dm.setText(tr("dm_short", dmem_user_extra(inf), inf["dmem_mb"] - DMEM_BASE_MB, DMEM_HEADROOM_MB,
+                                inf["dmem_mb"] - DMEM_BASE_MB + DMEM_HEADROOM_MB, inf["dmem_mb"]) if inf["expanded"] else tr("card_ok"))
             except BudgetError as e:
                 s.dm.setText(str(e)); ok = False
             s.keep.setVisible(bool(find_xml(s.root.text().strip().strip('"'))) and not s.rb_own.isChecked())
@@ -1623,7 +1686,6 @@ if __name__ == "__main__":
     ap.add_argument("--cli", nargs=2, type=int, metavar=("W", "H"))
     ap.add_argument("--root", metavar="SHADPS4_DIR")
     ap.add_argument("--xml", metavar="FILE", help="свой XML (иначе берётся с GitHub)")
-    ap.add_argument("--dmem", action="store_true", help="расширенный режим (CPU-память не урезается)")
     ap.add_argument("--no-keep-custom", action="store_true", help="не переносить кастомные патчи и состояния из имеющегося XML")
     ap.add_argument("--lang", choices=["en", "ru", "uk"])
     a = ap.parse_args()
